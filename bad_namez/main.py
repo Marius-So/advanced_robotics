@@ -1,107 +1,124 @@
 #!/usr/bin/env pybricks-micropython
 from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import Motor
-from pybricks.parameters import Port, Stop
-#from pybricks.ev3dev2.sound import Sound
+from pybricks.ev3devices import Motor, ColorSensor
+from pybricks.parameters import Port, Stop, Color
 from pybricks.robotics import DriveBase
+
+#from pybricks.pupdevices import ColorDistanceSensor
+from pybricks.tools import wait
 
 import time
 import math
+import random
 
 
 class moving_robot():
     def __init__(self):
-        self.x = 0 # i guess measured in cm
-        self.y = 0
-        self.orientation = 0 # we go with radiants lets say 0 means -> our nose aims towards y+
         self.control = EV3Brick()
         self.motor_a = Motor(Port.A)
         self.motor_b = Motor(Port.B)
         self.base = DriveBase(self.motor_a, self.motor_b, wheel_diameter=55.5, axle_track=104)
+        self.base.settings(250,250)#, turn_rate, turn_acceleration)
 
-        self.sensor = None
-
-    def move_to_point(self, x,y):
-        # here we need to calculate how we need to move in order to position to (x,y)
-
-        # calibration params
-        rot_cal = 1
-        move_cal = 1
-
-        delta_x = x - self.x
-        delta_y = y - self.y
-
-        need_direction = math.atan2(delta_y, delta_x)
-
-
-        #if (|need_direction - self.orientation| > 2*pi):
-        #    rotation = None
-        #else:
-        #    rotation = None
-
-        self.turn_by()
-
-
-        distance = math.sqrt(delta_x**2 + delta_y**2)
-        self.move_forward(distance)
-
-        # update positioning and rotation
-        self.oritentation = need_direction
-        self.x = x
-        self.y = y
-
-    #def play_happy_tune(self):
-    #    spkr = Sound()
-    #    spkr.speak('Hello, I am Robot')
-    #    spkr.play_file('R2D2a.wav',20)
+        self.sensor_left = ColorSensor(Port.S1)
+        self.sensor_center = ColorSensor(Port.S2)
+        self.sensor_right = ColorSensor(Port.S3)
 
     def turn_by(self, rad):
-        # speed deg/s
-        speed = 500
-        # time ms
-        time = 1000 * rad
-
-        if rad < 0:
-            speed = speed * -1
-
         self.base.turn(rad)
-        #self.motor_a.run_time(speed, time,then=Stop.BRAKE)
-        #self.motor_b.run_time(-speed, time,then=Stop.BRAKE)
 
     def move_forward(self, distance):
-        #speed = 1000
-        #self.motor_a.run_time(speed, time,then=Stop.BRAKE)
-        #self.motor_b.run_time(speed, time,then=Stop.BRAKE)
         self.base.straight(-distance)
 
+    def check_colour(self):
+        while True:
+        # Read the color.
+            color = self.sensor_center.color()
+            #ambient = self.sensor_b.ambient()
+            #reflection = self.sensor_b.reflection()
+            #rgb = self.sensor_b.rgb()
+            # color_2 = self.sensor_a.color()
+            # ambient_2 = self.sensor_a.ambient()
+            # reflection_2 = self.sensor_a.reflection()
+            # rgb_2 = self.sensor_a.rgb()
 
-#ev3 = EV3Brick()
-# Initialize a motor at port B.
-#test_motor = Motor(Port.B)
-# Play a sound.
-#ev3.speaker.beep()
-# Run the motor up to 500 degrees per second. To a target angle of 90 degrees.
-# test_motor.run_target(50, 90)
-# Play another beep sound.
-# ev3.speaker.beep(1000, 50)
+            #color_3 = self.sensor_center.color()
+            #ambient_3 = self.sensor_c.ambient()
+            #reflection_3 = self.sensor_c.reflection()
+            #rgb_3 = self.sensor_c.rgb()
 
-# test_motor.run(1000)
+            # Print the measured color.
+            print(color==Color.WHITE)
+            print(type(color))
+            #print(color==Color.White)
+            # print(color_2, ambient_2, reflection_2, rgb_2)
+            #print(color_3, ambient_3, reflection_3, rgb_3)
 
-# time.sleep(3)
-# ev3.speaker.beep()
-# test_motor.brake()
+            # Move the sensor around and see how
+            # well you can detect colors.
+
+            # Wait so we can read the value.
+            wait(2000)
+
+    def navigate_maze(self):
+        while True:
+                wait(2000) # this is our 'event loop'
+            # Read the color.
+                color = self.sensor_b.color()
+                ambient = self.sensor_b.ambient()
+                reflection = self.sensor_b.reflection()
+                rgb = self.sensor_b.rgb()
+
+                color_2 = self.sensor_a.color()
+                ambient_2 = self.sensor_a.ambient()
+                reflection_2 = self.sensor_a.reflection()
+                rgb_2 = self.sensor_a.rgb()
+
+                # Print the measured color.
+                print(color, ambient, reflection, rgb)
+                print(color_2, ambient_2, reflection_2, rgb_2)
+
+                # Move the sensor around and see how
+                # well you can detect colors.
+
+                # Wait so we can read the value.
+
+    def move_straight(self):
+        # logic to check for black again if we lose it
+        rot = 1
+        # basically move straight as long as sensor_center is black
+        while True:
+            while self.sensor_center.color() == Color.BLACK:
+                self.base.drive(-200,0)
+                wait(200)
+
+                if self.sensor_left.color():# and random:
+                    pass
+                elif self.sensor_right.color():
+                    pass
+
+            while self.sensor_center.color() == Color.WHITE:
+                self.base.drive(0, rot * 50)
+
+
+
+
+
+
+
 if __name__ == "__main__":
-    # straight
-    # left
-    # short dist
-    # right long dist
-
-    grad = 255/90
+    grad = 237/90
     advance = 1800/1060
 
     my_robot = moving_robot()
-    my_robot.move_forward(700*advance)
-    my_robot.turn_by(90*grad)
+    #my_robot.check_colour()
+    my_robot.move_straight()
+    #my_robot.turn_by(43.5*grad)
+    #my_robot.move_forward(850*advance)
+    #my_robot.turn_by(180*grad)
+    #my_robot.move_forward(700*advance)
 
-    my_robot.move_forward(700*advance)
+    #my_robot.turn_by(180*grad)
+    # spkr = Sound()
+    # spkr.speak('Hello, I am Robot')
 
