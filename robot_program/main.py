@@ -35,48 +35,6 @@ class moving_robot():
 	def move_forward(self, distance):
 		self.base.straight(-distance*advance)
 
-	def check_colour(self):
-		while True:
-			# Read the color.
-			color = self.sensor_center.color()
-			#ambient = self.sensor_b.ambient()
-			#reflection = self.sensor_b.reflection()
-			#rgb = self.sensor_b.rgb()
-			# color_2 = self.sensor_a.color()
-			# ambient_2 = self.sensor_a.ambient()
-			# reflection_2 = self.sensor_a.reflection()
-			# rgb_2 = self.sensor_a.rgb()
-			#color_3 = self.sensor_center.color()
-			#ambient_3 = self.sensor_c.ambient()
-			#reflection_3 = self.sensor_c.reflection()
-			#rgb_3 = self.sensor_c.rgb()
-			# Print the measured color.
-			print(color==Color.WHITE)
-			print(type(color))
-			#print(color==Color.White)
-			# print(color_2, ambient_2, reflection_2, rgb_2)
-			#print(color_3, ambient_3, reflection_3, rgb_3)
-			wait(2000)
-
-	def detect(self):
-		while True:
-			wait(2000) # this is our 'event loop'
-			# Read the color.
-			color = self.sensor_b.color()
-			ambient = self.sensor_b.ambient()
-			reflection = self.sensor_b.reflection()
-			rgb = self.sensor_b.rgb()
-			color_2 = self.sensor_a.color()
-			ambient_2 = self.sensor_a.ambient()
-			reflection_2 = self.sensor_a.reflection()
-			rgb_2 = self.sensor_a.rgb()
-			# Print the measured color.
-			print(color, ambient, reflection, rgb)
-			print(color_2, ambient_2, reflection_2, rgb_2)
-			# Move the sensor around and see how
-			# well you can detect colors.
-			# Wait so we can read the value.
-
 
 	def naviguate(self):
 		turn_cond = 0.333
@@ -124,22 +82,7 @@ class moving_robot():
 		for e in my_data: print(e)
 		#print_csv(my_data)
 
-#def print_csv(data):
-#	with open('ur file.csv','wb') as out:
-#		csv_out=csv.writer(out)
-#    	csv_out.writerow(['name','num'])
-#    	for row in data:
-#    	    csv_out.writerow(row)
 
 if __name__ == "__main__":
 	my_robot = moving_robot()
 	my_robot.naviguate()
-	#my_robot.gatherSensorInfo()
-	#my_robot.check_colour()
-	#my_robot.turn_by(43.5*grad)
-	#my_robot.move_forward(850*advance)
-	#my_robot.turn_by(180*grad)
-	#my_robot.move_forward(700*advance)
-	#my_robot.turn_by(180*grad)
-	# spkr = Sound()
-	# spkr.speak('Hello, I am Robot')
