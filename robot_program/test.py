@@ -1,3 +1,5 @@
+import copy
+
 class state:
 	def __init__(self, cans, robot):
 		self._cans = cans
@@ -95,7 +97,27 @@ def generate_new_states(state):
 				ret.append(state(state._cans, state._robot + 1))
 	return ret
 
-target = [19,32,46]
+def check_board():
+	# check for target ion wall
+	for t in target:
+		if board[t[0]][t[1]] == "1":
+			print("there is a mistake here")
+
+def printstate(target):
+	#horizontal = " - " * int(len(board) * 1.8)
+	#print(horizontal) 
+	print_board = board.copy()
+	for t in target:
+		print_board[t[0]][t[1]]="T"
+	for i in range(len(board)):
+		line = "" #"| " 
+		for j in range(len(board[i])):
+			line = line + str(print_board[i][j]) + " " #+ " | "  
+		print(line)
+		#print(horizontal)
+
+
+target = [(2,2), (3,4)]
 board = [	[1,1,1,1,1,1,1,1,1],
 			[1,0,0,0,0,0,0,0,1],
 			[1,0,1,0,1,0,0,0,1],
@@ -103,6 +125,11 @@ board = [	[1,1,1,1,1,1,1,1,1],
 			[1,0,1,0,1,0,1,0,1],
 			[1,0,0,0,0,0,0,0,1],
 			[1,1,1,1,1,1,1,1,1]]
+
+printstate(target)
+
+
+
 x = len(board[0])
 y = len(board)
 
@@ -110,5 +137,7 @@ robot = 10
 cans = [21, 39, 46]
 
 a = state(cans, robot)
+
+
 print(generate_new_states(a))
 
