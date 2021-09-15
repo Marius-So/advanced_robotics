@@ -117,8 +117,33 @@ def printState(state):
 			line = line + str(b[i][j]) + " "
 		print(line)
 
+def printStateFancy(state):
+	for i in range(len(board)):
+		line = ""
+		for j in range(len(board[i])):
+			e = board[i][j]
+			if(e == 0): e = " "	  #Empty
+			if(e == 1): e = "⊠"  #Walls
+			for t in target:
+				if(t == (i,j)): e = "✛" #Target
+			for c in cans:
+				if(c == (i,j)): e = "⬤" #Can
+			if ((state._robot[0] , state._robot[1]) == (i,j)): e = "△" #Can
+			line = line + str(e) + " "
+		print(line)
 
+def printCo():
+	print()
+	
 board = [	[1,1,1,1,1,1,1,1,1],
+			[1,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,0,0,1],
+			[1,0,0,1,1,1,0,0,1],
+			[1,0,0,0,0,0,0,0,1],
+			[1,0,0,0,0,0,0,0,1],
+			[1,1,1,1,1,1,1,1,1]]
+
+board2 = [	[1,1,1,1,1,1,1,1,1],
 			[1,0,0,0,0,0,0,0,1],
 			[1,0,1,0,1,0,0,0,1],
 			[1,0,0,0,0,0,0,0,1],
@@ -126,17 +151,21 @@ board = [	[1,1,1,1,1,1,1,1,1],
 			[1,0,0,0,0,0,0,0,1],
 			[1,1,1,1,1,1,1,1,1]]
 
+
 x = len(board[0])
 y = len(board)
 
-robot = (3,1)
-target = [(2,2), (3,4), (5,4)]
-cans = [(3,2), (5,6), (5,7)]
+robot = (1,1)
+target = [(4,4)]
+cans = [(2,4)]
 
 a = State(cans, robot)
-printState(a)
+printStateFancy(a)
 b = generate_new_states(a)
 for i in b:
 	print (i._robot)
-	printState(i)
+	printStateFancy(i)
+
+
+
 
