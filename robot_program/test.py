@@ -33,9 +33,8 @@ def board_translation(board):
 			else:
 				print ("ERRORRRRRRRRRR")
 	return robot, can, target, new_board	
-	
 
-def check(list1, list2):
+def finalState(list1, list2):
 	for i in list1:
 		if i in list2:
 			list1.remove(i)
@@ -96,7 +95,6 @@ def generate_new_states(state):
 			else:
 				ret.append(State(state._cans, (state._robot[0], state._robot[1] - 1)))
 	return ret
-	
 
 def check_board():
 	# check for target ion wall
@@ -132,9 +130,19 @@ def printStateFancy(state):
 			line = line + str(e) + " "
 		print(line)
 
-def printCo():
+def recursive(state):
+	print(finalState(cans,target))
+	if(finalState(cans,target)):
+		return state 	
+	newStates = generate_new_states(state)
+	for ns in newStates:
+		printStateFancy(ns)
+		#recursive(ns)
+
+def available():
 	print()
-	
+
+
 board = [	[1,1,1,1,1,1,1,1,1],
 			[1,0,0,0,0,0,0,0,1],
 			[1,0,0,0,0,0,0,0,1],
@@ -155,17 +163,11 @@ board2 = [	[1,1,1,1,1,1,1,1,1],
 x = len(board[0])
 y = len(board)
 
-robot = (1,1)
-target = [(4,4)]
+robot = (2,3)
+target = [(2,5)]
 cans = [(2,4)]
 
 a = State(cans, robot)
 printStateFancy(a)
-b = generate_new_states(a)
-for i in b:
-	print (i._robot)
-	printStateFancy(i)
-
-
-
+print(recursive(a))
 
