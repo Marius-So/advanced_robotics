@@ -62,7 +62,7 @@ def generate_new_states(state, prev):
 	if state._robot[0] > 0:
 		if board[state._robot[0] - 1][state._robot[1]] == 0:
 			if (state._robot[0] - 1, state._robot[1]) in state._cans: 
-				if board[state._robot[0] - 2][state._robot[1]] == 0 and (state._robot[0] - 2, state._robot[1]) not in state._cans and state._robot[0] > 1:
+				if state._robot[0] > 1 and board[state._robot[0] - 2][state._robot[1]] == 0 and (state._robot[0] - 2, state._robot[1]) not in state._cans:
 					new_cans = []
 					for i in state._cans:
 						if i != (state._robot[0] - 1, state._robot[1]):
@@ -74,7 +74,7 @@ def generate_new_states(state, prev):
 	if state._robot[0] < y:
 		if board[state._robot[0] + 1][state._robot[1]] == 0:
 			if (state._robot[0] + 1, state._robot[1]) in state._cans:
-				if board[state._robot[0] + 2][state._robot[1]] == 0 and (state._robot[0] + 2, state._robot[1]) not in state._cans and state._robot[0] < y - 1:
+				if state._robot[0] < y - 1 and board[state._robot[0] + 2][state._robot[1]] == 0 and (state._robot[0] + 2, state._robot[1]) not in state._cans:
 					new_cans = []
 					for i in state._cans:
 						if i != (state._robot[0] + 1, state._robot[1]):
@@ -86,7 +86,7 @@ def generate_new_states(state, prev):
 	if state._robot[1] < x:
 		if board[state._robot[0]][state._robot[1] + 1] == 0:
 			if (state._robot[0], state._robot[1] + 1) in state._cans:
-				if board[state._robot[0]][state._robot[1] + 2] == 0 and (state._robot[0], state._robot[1] + 2) not in state._cans and state._robot[1] < x - 1:
+				if state._robot[1] < x - 1 and board[state._robot[0]][state._robot[1] + 2] == 0 and (state._robot[0], state._robot[1] + 2) not in state._cans:
 					new_cans = []
 					for i in state._cans:
 						if i != (state._robot[0], state._robot[1] + 1):
@@ -98,7 +98,7 @@ def generate_new_states(state, prev):
 	if state._robot[1] > 0:
 		if board[state._robot[0]][state._robot[1] - 1] == 0:
 			if (state._robot[0], state._robot[1] - 1) in state._cans:
-				if board[state._robot[0]][state._robot[1] - 2] == 0 and (state._robot[0], state._robot[1] - 2) not in state._cans and state._robot[1] > 1:
+				if state._robot[1] > 1 and board[state._robot[0]][state._robot[1] - 2] == 0 and (state._robot[0], state._robot[1] - 2) not in state._cans:
 					new_cans = []
 					for i in state._cans:
 						if i != (state._robot[0], state._robot[1] - 1):
@@ -158,21 +158,21 @@ def printStateFancy(state):
 			line = line + str(e) + " "
 		print(line)
 
-board = [	[1,1,1,1,1,1,1,1,1],
-			[1,0,0,0,0,0,0,0,1],
-			[1,0,0,0,0,0,0,0,1],
-			[1,0,0,1,1,1,0,0,1],
-			[1,0,0,0,0,0,0,0,1],
-			[1,0,0,0,0,0,0,0,1],
-			[1,1,1,1,1,1,1,1,1]]
+board = [	[1,1,1,1,1,1,0],
+			[1,0,0,0,0,1,0],
+			[1,0,1,0,0,1,1],
+			[1,0,0,0,0,0,1],
+			[1,0,0,0,0,0,1],
+			[1,0,0,1,0,0,1],
+			[1,1,1,1,1,1,1]]
 
 
-x = len(board[0])
-y = len(board)
+x = len(board[0]) - 1
+y = len(board) - 1
 
-robot = (1,1)
-target = [(4,4), (4,5)]
-cans = [(2,4),(2,6)]
+robot = (5,5)
+target = [(1,3), (2,3), (3,3)]
+cans = [(4,2),(4,3), (4,4)]
 
 begining = State(cans,robot, -1)
 a = solve_sokoban(begining)
