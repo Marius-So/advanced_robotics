@@ -2,9 +2,10 @@ from copy import deepcopy
 
 
 class State:
-    def __init__(self, cans, robot):
+    def __init__(self, cans, robot, father):
         self.cans = cans
         self.robot = robot
+        self.father = father
 
 
 def finalState(state):
@@ -14,13 +15,11 @@ def finalState(state):
     print("GAME OVER. YOU WIN")
     return True
 
-
 def check_board():
     # check for target ion wall
     for t in target:
         if board[t[0]][t[1]] == "1":
             print("there is a mistake here")
-
 
 def printStateFancy(state):
     for i in range(len(board)):
@@ -48,7 +47,6 @@ def printStateFancy(state):
 
 # Return a list of valid moves from a state.
 
-
 def validMoves(state):
     vm = []
     up = (state.robot[0] - 1, state.robot[1])
@@ -72,14 +70,12 @@ def validMoves(state):
     return vm
 # Helper function of validMoves
 
-
 def isWall(tuple):
     if(board[tuple[0]][tuple[1]] == 1):
         return True
     else:
         return False
 # Helper function of validMoves
-
 
 def isCan(tuple):
     for c in cans:
@@ -88,10 +84,9 @@ def isCan(tuple):
     else:
         return False
 
-
 def newState(current, move):
     if(isCan(move) == False):
-        return State(current.cans, move)
+        return State(current.cans, move, current.father)
     else:
         cans = []
         vectorDirection = (
@@ -104,14 +99,13 @@ def newState(current, move):
             if(c != move):
                 cans.append(c)
                 # print(str(cans))
-        return State(cans, move)
-
-#comment
+        return State(cans, move, current.father)
 
 def recursive(state, depth):
-    print("Depth: " + str(depth))
+    #print("Depth: " + str(depth))
     printStateFancy(state)
     if(finalState(state) == True):
+        trackDinasty(state)
         return
     if(depth > limitDepth):
         return
@@ -123,14 +117,20 @@ def recursive(state, depth):
             explored.append(state)
             recursive(ns, depth)
 
-previousDepth = 0
-tr = []
-def handler(state, depth):
-    if (previousDepth < depth):
-        tr.append(state)
+winnerDinasties = [[]]
+dinasty = []
+def trackDinasty(state):
+    if(state.father == initialState):
+        print("im here")
+        return
+    else:
+        dinasty.append(state)
+        trackDinasty(state.father)
 
-#-------------------------------------------------------------------------- im here, I need to track the winner branches
-
+    print("Dinasty:---------------")
+    for s in dinasty:
+        printStateFancy(s)
+    print("Dinasty Ends-----------")
 
 def isExplored(state):
     for ex in explored:
@@ -147,7 +147,7 @@ board = [	[1, 1, 1, 1, 1, 1, 1, 1, 1],
           [1, 0, 0, 0, 0, 0, 0, 0, 1],
           [1, 1, 1, 1, 1, 1, 1, 1, 1]]
 
-robot = (1, 2)
+robot = (2, 2)
 target = [(2, 5)]
 cans = [(2, 4)]
 
@@ -155,10 +155,16 @@ explored = []
 trajectories = [[]]
 
 
-a = State(cans, robot)
-tr.append(a)
+initialState = State(cans, robot, None)
+#trackDinasty(None)
+
 # explored.append(a)
 #printStateFancy(a)
 limitDepth = 10
 depth = 0
-recursive(a, depth)
+winner = recursive(initialState, depth)
+
+print(len(winnerDinasties))
+for wd in winnerDinasties:
+    print(wd)
+
