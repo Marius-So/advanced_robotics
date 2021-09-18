@@ -59,10 +59,10 @@ def check(list1, list2):
 
 def generate_new_states(state, prev):
 	ret = []
-	if state._robot[0] > 0:
-		if board[state._robot[0] - 1][state._robot[1]] == 0:
-			if (state._robot[0] - 1, state._robot[1]) in state._cans: 
-				if state._robot[0] > 1 and board[state._robot[0] - 2][state._robot[1]] == 0 and (state._robot[0] - 2, state._robot[1]) not in state._cans:
+	if state._robot[0] > 0: #are we at border
+		if board[state._robot[0] - 1][state._robot[1]] == 0: #is there a wall
+			if (state._robot[0] - 1, state._robot[1]) in state._cans:  #is there a can
+				if state._robot[0] > 1 and board[state._robot[0] - 2][state._robot[1]] == 0 and (state._robot[0] - 2, state._robot[1]) not in state._cans: #is the can is at the border, or is there a wall or a can in front of her 
 					new_cans = []
 					for i in state._cans:
 						if i != (state._robot[0] - 1, state._robot[1]):
@@ -110,6 +110,20 @@ def generate_new_states(state, prev):
 	return ret
 	
 
+def check_stuck(cans):
+	for can in cans:
+		if can not in target:
+			if board[can[0]][can[1] + 1] == 1 and board[can[0] + 1][can[1]] == 1:
+				return True
+			if board[can[0] + 1][can[1]] == 1 and board[can[0]][can[1] - 1] == 1:
+				return True
+			if board[can[0]][can[1] - 1] == 1 and board[can[0] - 1][can[1]] == 1:
+				return True
+			if board[can[0]][can[1] + 1] == 1 and board[can[0] - 1][can[1]] == 1:
+				return True
+	return False
+		
+
 def solve_sokoban(begining):
     target.sort()
     states_list = [begining]
@@ -120,7 +134,7 @@ def solve_sokoban(begining):
         for i in range(begining, end):
             new = generate_new_states(states_list[i], i)
             for j in new:
-                if j not in states_list:
+                if j not in states_list and check_stuck(j._cans) == False:
                     #printStateFancy(j)
                     states_list.append(j)
                     j._cans.sort()
@@ -138,10 +152,24 @@ def check_board():
 		if board[t[0]][t[1]] == "1":
 			print("there is a mistake here")
 
-def recursive_print_traject(l, i):
+def recursive_print_traject(l, i, after):
 	if l[i]._prev != -1:
-		recursive_print_traject(l, l[i]._prev)
-	printStateFancy(l[i])
+		ret = recursive_print_traject(l, l[i]._prev, i)
+	else:
+		ret = []
+	#printStateFancy(l[i])
+	if l[after]._robot[0] > l[i]._robot[0]:
+		ret.append("down")
+	elif l[after]._robot[0] < l[i]._robot[0]:
+		ret.append("up")
+	elif l[after]._robot[1] > l[i]._robot[1]:
+		ret.append("right")
+	else:
+		ret.append("left")
+	if l[after]._cans != l[i]._cans:
+		ret.append("can")
+	return ret
+
 
 def printStateFancy(state):
 	for i in range(len(board)):
@@ -158,13 +186,13 @@ def printStateFancy(state):
 			line = line + str(e) + " "
 		print(line)
 
-board = [	[1,1,1,1,1,1,0],
-			[1,0,0,0,0,1,0],
-			[1,0,1,0,0,1,1],
-			[1,0,0,0,0,0,1],
-			[1,0,0,0,0,0,1],
-			[1,0,0,1,0,0,1],
-			[1,1,1,1,1,1,1]]
+board = [	[1,1,1,1,1,1,0,0],
+			[1,0,0,0,0,1,0,0],
+			[1,0,1,0,0,1,0,0],
+			[1,0,0,0,0,1,1,1],
+			[1,0,0,0,0,0,0,1],
+			[1,0,0,1,0,0,0,1],
+			[1,1,1,1,1,1,1,1]]
 
 
 x = len(board[0]) - 1
@@ -176,4 +204,5 @@ cans = [(4,2),(4,3), (4,4)]
 
 begining = State(cans,robot, -1)
 a = solve_sokoban(begining)
-recursive_print_traject(a, len(a) - 1)
+print(recursive_print_traject(a, len(a) - 1, -1))
+
