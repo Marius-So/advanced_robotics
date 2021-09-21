@@ -188,32 +188,3 @@ def printStateFancy(state):
 			line = line + str(e) + " "
 		print(line)
 
-board_2 = [	[1,1,1,1,1,1,0,0],
-			[1,0,0,0,0,1,0,0],
-			[1,0,1,0,0,1,0,0],
-			[1,0,0,0,0,1,1,1],
-			[1,0,0,0,0,0,0,1],
-			[1,0,0,1,0,0,0,1],
-			[1,1,1,1,1,1,1,1]]
-
-board = [
-			[0,0,0,0],
-			[0,0,0,0],
-			[0,0,0,0],
-			[0,0,0,0]]
-
-x = len(board[0]) - 1
-y = len(board) - 1
-
-robot = (0,0)
-target = [(1,1), (2,2)]
-cans = [(1,2),(2,1)]
-
-
-start_time = time.time()
-begining = State(cans,robot, -1)
-printStateFancy(begining)
-a = solve_sokoban(begining)
-print('I needed ' + str(round(time.time()-start_time,3)) + 's to solve the puzzle')
-print(recursive_print_traject(a, len(a) - 1, -1))
-
