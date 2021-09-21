@@ -33,6 +33,11 @@ class moving_robot():
 		self.speed = 200
 		self.base.settings(self.speed, self.speed)#, turn_rate, turn_acceleration)
 		self.direction = 0 # looks north 1 east, 2 south, 3 west
+		self.horizontal = 0
+		self.vertical = 0
+
+		self.hor_dist = {0: 760, 1:670, 2: 600}
+		self.ver_dist = {0: 450, 1:450, 2: 450}
 
 		self.sensor_left = ColorSensor(Port.S1)
 		self.sensor_center = ColorSensor(Port.S2)
@@ -44,27 +49,44 @@ class moving_robot():
 		# self.map
 
 	def edit_direction(self, update):
-		self.direction += (self.direction + update) % 4
+		self.direction = (self.direction + update) % 4
+
+	def update_pos(self):
+		# we have 4 directions
+		if self.direction % 2==0:
+			if self.direction == 0:
+				self.horizontal += 1
+				print('im here')
+			else:
+				self.horizontal -= 1
+			# we move horizzontal
+		else:
+			if self.direction == 1:
+				self.vertical += 1
+			else:
+				self.vertical -= 1
+		pass
 
 	def find_line(self):
 		while self.sensor_center.color() != Color.BLACK:
 			self.base.drive(0, self.rot * 150)
 			if self.sensor_left.color() == Color.BLACK:
-				self.rot = 1
-			if self.sensor_right.color() == Color.BLACK:
 				self.rot = -1
+			if self.sensor_right.color() == Color.BLACK:
+				self.rot = 1
+		self.base.reset()
 
-	def turn_left(self, rad):
+	def turn_left(self):
 		self.base.turn(90 * grad)
 		self.edit_direction(-1)
 		# need to think about editing rot
 
-	def turn_right(self, rad):
+	def turn_right(self):
 		self.base.turn(-90 * grad)
 		self.edit_direction(1)
 
-	def turn_around(self, rad):
-		self.base.turn(190 * grad)
+	def turn_around(self):
+		self.base.turn(180 * grad)
 		self.edit_direction(2)
 
 	def rotate_to(self, direction):
@@ -84,21 +106,24 @@ class moving_robot():
 
 	def move_to_next_interception(self, dist=150):
 		if self.direction % 2 == 0:
-			dist = 150
+			dist = self.hor_dist.get(self.horizontal)
+			print(dist)
 		else:
-			dist = 200
+			dist = self.ver_dist.get(self.vertical)
 
-		while dist > 0:
-			while self.sensor_center.color() == Color.BLACK and dist>0:
-				dist = dist - 1
-				self.base.drive(-200,0)
-				wait(3)
-				print(dist)
+		while dist + self.base.distance() > 0:
+			self.base.drive(-200,0)
+			while self.sensor_center.color() == Color.BLACK and (dist + self.base.distance()) >0:
+				#print(dist + self.base.distance())
 				if self.sensor_left.color() == Color.BLACK:
 					self.rot = -1
 				if self.sensor_right.color() == Color.BLACK:
 					self.rot = 1
+			#dist = dist + 100
+
+			dist = dist + self.base.distance()
 			self.find_line()
+		self.update_pos()
 		print('done')
 
 
@@ -116,11 +141,15 @@ class moving_robot():
 
 if __name__ == "__main__":
 	my_robot = moving_robot()
+	#while True:
+	#	print('left: '+ str(my_robot.sensor_left.color()) + '\tmiddle: ' +str(my_robot.sensor_center.color()) +  #'\tright: ' +str(my_robot.sensor_right.color()))
+	#	time.sleep(0.5)
 	plan = [0, 2,2,1,1,0]
+	#my_robot.follow_plan(plan)
 	#[0,1,2,0] # 0 left, 1 straigt, 2 right, 3 would be turn 180 degree
 	my_robot.move_to_next_interception()
-	my_robot.turn_right(90)
 	my_robot.move_to_next_interception()
-	my_robot.turn_left(90)
-	my_robot.move_to_next_interception()
-	my_robot.turn_around(90)
+	#my_robot.turn_left()
+	#my_robot.turn_right()
+	#my_robot.move_to_next_interception()
+	#my_robot.turn_around()
