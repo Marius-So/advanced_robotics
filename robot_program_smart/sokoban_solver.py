@@ -114,15 +114,14 @@ def generate_new_states(state, prev):
 def check_stuck(cans):
 	for can in cans:
 		if can not in target:
-			if not (can[0] == 0 or can[0] == y or can[1] == 0 or can[1] == x):
-				if board[can[0]][can[1] + 1] == 1 and board[can[0] + 1][can[1]] == 1:
-					return True
-				if board[can[0] + 1][can[1]] == 1 and board[can[0]][can[1] - 1] == 1:
-					return True
-				if board[can[0]][can[1] - 1] == 1 and board[can[0] - 1][can[1]] == 1:
-					return True
-				if board[can[0]][can[1] + 1] == 1 and board[can[0] - 1][can[1]] == 1:
-					return True
+			if board[can[0]][can[1] + 1] == 1 and board[can[0] + 1][can[1]] == 1:
+				return True
+			if board[can[0] + 1][can[1]] == 1 and board[can[0]][can[1] - 1] == 1:
+				return True
+			if board[can[0]][can[1] - 1] == 1 and board[can[0] - 1][can[1]] == 1:
+				return True
+			if board[can[0]][can[1] + 1] == 1 and board[can[0] - 1][can[1]] == 1:
+				return True
 	return False
 
 
@@ -188,32 +187,30 @@ def printStateFancy(state):
 			line = line + str(e) + " "
 		print(line)
 
-board_2 = [	[1,1,1,1,1,1,0,0],
-			[1,0,0,0,0,1,0,0],
-			[1,0,1,0,0,1,0,0],
-			[1,0,0,0,0,1,1,1],
-			[1,0,0,0,0,0,0,1],
-			[1,0,0,1,0,0,0,1],
-			[1,1,1,1,1,1,1,1]]
-
-board = [
-			[0,0,0,0],
+board = [	[0,0,0,0],
 			[0,0,0,0],
 			[0,0,0,0],
 			[0,0,0,0]]
-
+target = [(1,1), (2,2)]
 x = len(board[0]) - 1
 y = len(board) - 1
 
-robot = (0,0)
-target = [(1,1), (2,2)]
-cans = [(1,2),(2,1)]
+if __name__ == "__main__":
+	board = [	[0,0,0,0],
+				[0,0,0,0],
+				[0,0,0,0],
+				[0,0,0,0]]
 
+	x = len(board[0]) - 1
+	y = len(board) - 1
 
-start_time = time.time()
-begining = State(cans,robot, -1)
-printStateFancy(begining)
-a = solve_sokoban(begining)
-print('I needed ' + str(round(time.time()-start_time,3)) + 's to solve the puzzle')
-print(recursive_print_traject(a, len(a) - 1, -1))
+	robot = (3,3)
+	target = [(1,1), (2,2)]
+	cans = [(1,2),(2,1)]
+
+	start_time = time.time()
+	begining = State(cans,robot, -1)
+	a = solve_sokoban(begining)
+	print('I needed ' + str(round(time.time()-start_time,3)) + 's to solve the puzzle')
+	print(recursive_print_traject(a, len(a) - 1, -1))
 

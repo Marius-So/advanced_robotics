@@ -5,6 +5,7 @@ from pybricks.parameters import Port, Stop, Color
 from pybricks.robotics import DriveBase
 from random import randrange
 #from pybricks.pupdevices import ColorDistanceSensor
+from sokoban_solver import *
 from pybricks.tools import wait
 import csv
 
@@ -36,8 +37,8 @@ class moving_robot():
 		self.horizontal = 0
 		self.vertical = 0
 
-		self.hor_dist = {0: 760, 1:670, 2: 600}
-		self.ver_dist = {0: 450, 1:450, 2: 450}
+		self.ver_dist = {-1: 760, 0: 760, 1:670, 2: 600, 3: 600}
+		self.hor_dist = {-1: 250, 0: 250, 1:250, 2: 250, 3: 250}
 
 		self.sensor_left = ColorSensor(Port.S1)
 		self.sensor_center = ColorSensor(Port.S2)
@@ -49,31 +50,30 @@ class moving_robot():
 		# self.map
 
 	def edit_direction(self, update):
-		self.direction = (self.direction + update) % 4
+		self.direction = (self.direction + update + 4) % 4
 
 	def update_pos(self):
 		# we have 4 directions
-		if self.direction % 2==0:
+		if self.direction % 2 == 0:
 			if self.direction == 0:
 				self.horizontal += 1
-				print('im here')
 			else:
 				self.horizontal -= 1
 			# we move horizzontal
 		else:
 			if self.direction == 1:
-				self.vertical += 1
-			else:
 				self.vertical -= 1
+			else:
+				self.vertical += 1
 		pass
 
 	def find_line(self):
 		while self.sensor_center.color() != Color.BLACK:
 			self.base.drive(0, self.rot * 150)
 			if self.sensor_left.color() == Color.BLACK:
-				self.rot = -1
-			if self.sensor_right.color() == Color.BLACK:
 				self.rot = 1
+			if self.sensor_right.color() == Color.BLACK:
+				self.rot = -1
 		self.base.reset()
 
 	def turn_left(self):
@@ -101,55 +101,99 @@ class moving_robot():
 			# left
 			self.turn_left()
 
-	def move_forward(self, distance):
-		self.base.straight(-distance*advance)
+	#def move_forward(self, distance):
+	#	self.base.straight(-distance*advance)
 
 	def move_to_next_interception(self, dist=150):
+		print('direction: ' + str(self.direction))
 		if self.direction % 2 == 0:
-			dist = self.hor_dist.get(self.horizontal)
-			print(dist)
+			edit = 0
+			if self.direction == 2: edit = 1
+			dist = self.ver_dist.get(self.horizontal - edit)
 		else:
-			dist = self.ver_dist.get(self.vertical)
+			edit = 0
+			if self.direction == 1: edit = 1
+			dist = self.hor_dist.get(self.vertical - edit)
 
+		print('dist to go: ' + str(dist))
 		while dist + self.base.distance() > 0:
 			self.base.drive(-200,0)
 			while self.sensor_center.color() == Color.BLACK and (dist + self.base.distance()) >0:
-				#print(dist + self.base.distance())
 				if self.sensor_left.color() == Color.BLACK:
 					self.rot = -1
 				if self.sensor_right.color() == Color.BLACK:
 					self.rot = 1
-			#dist = dist + 100
-
 			dist = dist + self.base.distance()
 			self.find_line()
 		self.update_pos()
-		print('done')
 
+	def push_can(self):
+		self.move_to_next_interception()
+		deduct = 100
+		if self.direction % 2 == 0:
+			dist = self.hor_dist.get(self.horizontal) - 100
+			back_dist = dist
+		else:
+			dist = self.ver_dist.get(self.vertical) - 100
+			back_dist = dist
+
+		while dist + self.base.distance() > 0:
+			self.base.drive(-200,0)
+			while self.sensor_center.color() == Color.BLACK and (dist + self.base.distance()) >0:
+				if self.sensor_left.color() == Color.BLACK:
+					self.rot = -1
+				if self.sensor_right.color() == Color.BLACK:
+					self.rot = 1
+
+			dist = dist + self.base.distance()
+			self.find_line()
+
+		while back_dist - self.base.distance() > 0:
+			self.base.drive(200,0)
+			while self.sensor_center.color() == Color.BLACK and (back_dist - self.base.distance()) >0:
+				if self.sensor_left.color() == Color.BLACK:
+					self.rot = -1
+				if self.sensor_right.color() == Color.BLACK:
+					self.rot = 1
+
+			dist = back_dist - self.base.distance()
+			self.find_line()
 
 	def follow_plan(self, plan):
-		while not self.plan_executed:
+		if plan:
 			next_move = plan[0] # move straight between any two moves
-			processing = True
-			while processing:
-				while self.sensor_center.color() == Color.BLACK:
-					# move on with plan
+			if next_move == 'up':
+				self.rotate_to(0)
+				self.move_to_next_interception()
+				time.sleep(3)
+				print('done up')
+			if next_move == 'right':
+				self.rotate_to(1)
+				self.move_to_next_interception()
+				time.sleep(3)
+				print('done left')
+			if next_move == 'down':
+				self.rotate_to(2)
+				self.move_to_next_interception()
+				time.sleep(3)
+				print('done down')
+			if next_move == 'left':
+				self.rotate_to(3)
+				self.move_to_next_interception()
+				time.sleep(3)
+				print('done right')
+			if next_move == 'can':
+				self.push_can()
+				time.sleep(3)
+				print('done can')#
+			self.follow_plan(plan[1:])
 
-					pass
-				# when
-				self.find_line()
 
 if __name__ == "__main__":
 	my_robot = moving_robot()
-	#while True:
-	#	print('left: '+ str(my_robot.sensor_left.color()) + '\tmiddle: ' +str(my_robot.sensor_center.color()) +  #'\tright: ' +str(my_robot.sensor_right.color()))
-	#	time.sleep(0.5)
-	plan = [0, 2,2,1,1,0]
-	#my_robot.follow_plan(plan)
-	#[0,1,2,0] # 0 left, 1 straigt, 2 right, 3 would be turn 180 degree
-	my_robot.move_to_next_interception()
-	my_robot.move_to_next_interception()
-	#my_robot.turn_left()
-	#my_robot.turn_right()
-	#my_robot.move_to_next_interception()
-	#my_robot.turn_around()
+	my_robot.direction = 2
+	my_robot.horizontal = 3
+	my_robot.vertical = 3
+	plan = ['right', 'down', 'right']#, 'left']# , 'can', 'up', 'up', 'right', 'right', 'down', 'left', 'can', 'left']
+	my_robot.follow_plan(plan)
+
