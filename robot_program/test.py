@@ -186,23 +186,3 @@ def printStateFancy(state):
 			line = line + str(e) + " "
 		print(line)
 
-board = [	[1,1,1,1,1,1,0,0],
-			[1,0,0,0,0,1,0,0],
-			[1,0,1,0,0,1,0,0],
-			[1,0,0,0,0,1,1,1],
-			[1,0,0,0,0,0,0,1],
-			[1,0,0,1,0,0,0,1],
-			[1,1,1,1,1,1,1,1]]
-
-
-x = len(board[0]) - 1
-y = len(board) - 1
-
-robot = (5,5)
-target = [(1,3), (2,3), (3,3)]
-cans = [(4,2),(4,3), (4,4)]
-
-begining = State(cans,robot, -1)
-a = solve_sokoban(begining)
-print(recursive_print_traject(a, len(a) - 1, -1))
-

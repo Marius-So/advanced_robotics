@@ -11,7 +11,7 @@ import csv
 import time
 import math
 import random
-
+import test.py
 
 #grad = 237/90
 grad = 267/90
@@ -35,12 +35,94 @@ class moving_robot():
 	def move_forward(self, distance):
 		self.base.straight(-distance*advance)
 
+	def turn(moove, previous):
+		if moove == previous:
+			return 0
+		if moove == "up":
+			if previous == "right":
+				return 90
+			if previous == "down":
+				return 180
+			return -90
+		if moove == "right":
+			if previous == "up":
+				return -90
+			if previous == "down":
+				return 90
+			return 180
+		if moove == "down":
+			if previous == "up":
+				return 180
+			if previous == "right":
+				return 90
+			return -90
+		if moove == "left":
+			if previous == "up":
+				return 90
+			if previous == "right":
+				return 180
+			return -90
 
-	def naviguate(self):
-		turn_cond = 0.333
+	def naviguate(self, mooves):
+		previous = up
+		for moove in mooves:
+			if moove == can:
+				done = False
+                while done == False:
+                    if self.sensor_left.color() == BLACK:
+                        if self.sensor_center.color() == BLACK
+                            done = True
+                        else:
+                            while self.sensor_center.color() != BLACK:
+                                self.base.drive(0, - 150)
+                    if self.sensor_right.color() == LEFT:
+                        f self.sensor_center.color() == BLACK
+                            done = True
+                        else:
+                            while self.sensor_center.color() != BLACK:
+                                self.base.drive(0, 150)  
+                    self.base.drive(10, 0)
+				done = False
+                while done == False:
+                    if self.sensor_left.color() == BLACK:
+                        if self.sensor_center.color() == BLACK
+                            done = True
+                        else:
+                            while self.sensor_center.color() != BLACK:
+                                self.base.drive(0, - 150)
+                    if self.sensor_right.color() == LEFT:
+                        f self.sensor_center.color() == BLACK
+                            done = True
+                        else:
+                            while self.sensor_center.color() != BLACK:
+                                self.base.drive(0, 150)  
+                    self.base.drive(-10, 0)
+			else:
+				angle_to_rotate = turn(moove, previous)
+				previous = moove
+				self.turn_by(angle_to_rotate*grad)
+				done = False
+				while done == False:
+					if self.sensor_left.color() == BLACK:
+						if self.sensor_center.color() == BLACK
+							done = True
+						else:
+							while self.sensor_center.color() != BLACK:
+								self.base.drive(0, - 150)
+					if self.sensor_right.color() == LEFT:
+						f self.sensor_center.color() == BLACK
+                            done = True
+                        else:
+                            while self.sensor_center.color() != BLACK:
+                                self.base.drive(0, 150)	
+					self.base.drive(10, 0)
+					
+
+					
+
 		rot = 1 #turn right by default if middle dont detect black
-	 	straight = 100 # used to not check to often when to turn (to keep probability)
-	 	while True:
+		straight = 100 # used to not check to often when to turn (to keep probability)
+		while True:
 			while self.sensor_center.color() == Color.BLACK: # while middle detect black go forward
 				self.base.drive(-200,0)
 				straight -= 1
@@ -83,6 +165,19 @@ class moving_robot():
 		#print_csv(my_data)
 
 
+board = [   [0,0,0,0],
+            [0,0,0,0],
+            [0,0,0,0],
+            [0,0,0,0]]
+
+x = len(board[0]) - 1
+y = len(board) - 1
+target = [(3,3)]
+
 if __name__ == "__main__":
-	my_robot = moving_robot()
-	my_robot.naviguate()
+	cans = [(2,3)]
+	robot = [(1,3)]
+	begining = State(cans,robot, -1)
+	a = solve_sokoban(begining)
+	b = recursive_print_traject(a, len(a) - 1, -1))
+	my_robot.naviguate(b)
