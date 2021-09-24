@@ -88,18 +88,20 @@ class moving_robot():
 
 	def naviguate(self, mooves, init_direction):
 		previous = init_direction
-		for moove in mooves:
-			print(moove)
-			if moove == 'can':
-				self.follow_line(-1)
-				self.base.straight(270)
-				self.follow_line(1)
-				self.base.straight(-200)
+		for moove in range(len(mooves)):
+			if mooves[moove] == 'can':
+				if mooves[moove + 2] == 'can' and mooves[moove + 1] == mooves[moove - 1]:
+					self.follow_line(-1)
+				else:
+					self.follow_line(-1)
+					self.base.straight(270)
+					self.follow_line(1)
+					self.base.straight(-200)
 
 			else:
-				angle_to_rotate = self.turn(moove, previous)
+				angle_to_rotate = self.turn(mooves[moove], previous)
 				print(angle_to_rotate)
-				previous = moove
+				previous = mooves[moove]
 				self.turn_by(angle_to_rotate*grad)
 				self.follow_line(-1)
 				self.base.straight(-270)
