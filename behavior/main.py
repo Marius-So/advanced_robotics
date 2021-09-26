@@ -89,22 +89,29 @@ class moving_robot():
 	def naviguate(self, mooves, init_direction):
 		previous = init_direction
 		for moove in range(len(mooves)):
+			# here we have the slow speed
+
 			if mooves[moove] == 'can':
-				if mooves[moove + 2] == 'can' and mooves[moove + 1] == mooves[moove - 1]:
+				self.speed = 120
+				if moove < len(mooves)-1 and mooves[moove + 2] == 'can' and mooves[moove + 1] == mooves[moove - 1]:
 					self.follow_line(-1)
 				else:
 					self.follow_line(-1)
 					self.base.straight(270)
+					# after backward correction we speed up
+					self.speed = 220
 					self.follow_line(1)
+					# this is the forward correction
 					self.base.straight(-200)
 
 			else:
+				self.speed = 240
 				angle_to_rotate = self.turn(mooves[moove], previous)
 				print(angle_to_rotate)
 				previous = mooves[moove]
 				self.turn_by(angle_to_rotate*grad)
 				self.follow_line(-1)
-				self.base.straight(-270)
+				self.base.straight(-220)
 
 	def find_line(self):
 		while self.sensor_center.color() != Color.BLACK:
@@ -119,20 +126,23 @@ if __name__ == "__main__":
 	my_robot = moving_robot()
 
 	# initialisiing the maze
-	cans = [(1,2)]
-	robot = (3,0)
-	target = [(3,3)]
+	# y is x and x is y
+	cans = [(1,1),(2,1), (3,1)]
+	robot = (0,0)
+	target = [(0,3),(2,0),(3,3)]
 	board = [[0,0,0,0],
             [0,0,0,0],
             [0,0,0,0],
             [0,0,0,0]]
 
 	# solving the maze
-	init_state = State(cans,robot, -1)
-	solver = SokobanSolver(board, target, robot, cans)
-	solution = solver.solve_sokoban(init_state)
-	plan = solver.recursive_print_traject(solution, len(solution) - 1, -1)[:-1]
-	print(plan)
+	#init_state = State(cans,robot, -1)
+	#solver = SokobanSolver(board, target, robot, cans)
+	#solver.printStateFancy(init_state)
+	#solution = solver.solve_sokoban(init_state)
+	#plan = solver.recursive_print_traject(solution, len(solution) - 1, -1)[:-1]
+	#print(plan)
+	plan = ['down', 'down', 'down', 'right', 'can', 'right', 'can', 'up', 'left', 'can', 'up', 'can', 'left', 'up', 'right', 'can', 'right', 'can']
 
 	# run the plan
-	my_robot.naviguate(plan, 'up')
+	my_robot.naviguate(plan, 'down')

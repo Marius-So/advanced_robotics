@@ -105,7 +105,8 @@ class SokobanSolver:
 			ret = self.recursive_print_traject(l, l[i]._prev, i)
 		else:
 			ret = []
-		#printStateFancy(l[i])
+		self.printStateFancy(l[i])
+		print('---------------')
 		if l[after]._robot[0] > l[i]._robot[0]:
 			ret.append("down")
 		elif l[after]._robot[0] < l[i]._robot[0]:
@@ -183,12 +184,29 @@ class State:
 #				cans.append((i,j))
 #			elif board[i][j] == '$':
 #				new_line.append(0)
-#				can.append((i,j))
+#				cans.append((i,j))
 #			elif board[i][j] == ' ':
 #				new_line.append(0)
 #			else:
 #				print ("ERRORRRRRRRRRR")
-#	return robot, can, target, new_board
+#	print(new_board)
+#	return robot, cans, target, new_board
+#
+if '__main__' == __name__:
+	cans = [(1,1),(2,1), (3,1)]
+	robot = (0,0)
+	target = [(0,3),(2,0),(3,3)]
+	board = [[0,0,0,0],
+            [0,0,0,0],
+            [0,0,0,0],
+            [0,0,0,0]]
+
+	init_state = State(cans,robot, -1)
+	solver = SokobanSolver(board, target, robot, cans)
+	solver.printStateFancy(init_state)
+	solution = solver.solve_sokoban(init_state)
+	plan = solver.recursive_print_traject(solution, len(solution) - 1, -1)[:-1]
+	print(plan)
 
 
 
