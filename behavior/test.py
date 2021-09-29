@@ -1,5 +1,8 @@
 from sokobanSolver import State, SokobanSolver
 from random import randint
+import time
+import matplotlib.pyplot as plt
+import numpy as np
 
 def generate_all(min, max, ncans, prob):
 	x = randint(min,max)
@@ -35,15 +38,37 @@ def generate_all(min, max, ncans, prob):
 	return [board, cans, target, robot]
 
 if __name__ == "__main__":
-	for i in range(10):	
-		a = generate_all(4, 5, 3, 5)
-		init_state = State(a[1],a[3], -1)
-		solver = SokobanSolver(a[0], a[2], a[3], a[1])
-		#solution = solver.solve_sokoban(init_state)
-		#plan = solver.recursive_print_traject(solution, len(solution) - 1, -1)[:-1]
-		print("both", solver.complexity_both(init_state))
-		print("stuck", solver.complexity_stuck(init_state))
-		print("not", solver.complexity_not(init_state))
-		print("brute force", solver.complexity_bf(init_state))
-		del(init_state)
-		del(solver)
+	time_1_can = []
+	time_2_can = []
+	size = []
+	for i in range(4, 12):
+		time_1_can.append(0)
+		size.append(i)
+		for j in range(30):
+			a = generate_all(i, i + 1, 1, 6)
+			init_state = State(a[1],a[3], -1)
+			solver = SokobanSolver(a[0], a[2], a[3], a[1])
+			print(i)
+			a = time.time()
+			solver.solve_sokoban(init_state)
+			time_1_can[-1] += (time.time() - a) / 30
+			del(init_state)
+			del(solver)
+	for i in range(4, 6):
+		time_2_can.append(0)
+		for j in range(30):
+			a = generate_all(i, i + 1, 2, 6)
+			init_state = State(a[1],a[3], -1)
+			solver = SokobanSolver(a[0], a[2], a[3], a[1])
+			print(i)
+			a = time.time()
+			solver.solve_sokoban(init_state)
+			time_2_can[-1] += (time.time() - a) / 30
+			del(init_state)
+			del(solver)
+	for i in range(6,12):
+		time_2_can.append(np.nan)
+	print("---------------------")
+	plt.plot(size, time_1_can, )
+	plt.plot(size, time_2_can)
+	plt.show()
