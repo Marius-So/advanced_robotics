@@ -75,21 +75,22 @@ class SokobanSolver:
 						return True
 					if self.board[can[0]][can[1] + 1] == 1 and self.board[can[0] - 1][can[1]] == 1:
 						return True
+				if can[0] == 0 and can[1] == 0 or can[0] == self.y and can[1] == 0 or can[0] == 0 and can[1] == self.x and can[0] == self.y and can[1] == self.x:
+					return True
 		return False
-
 
 	def solve_sokoban(self, begining):
 		self.targets.sort()
 		states_list = [begining]
 		begining = 0
 		end = 1
+		a = 0
 		while (True):
 			a = 0
 			for i in range(begining, end):
 				new = self.generate_new_states(states_list[i], i)
 				for j in new:
 					if j not in states_list and self.check_stuck(j._cans) == False:
-						#printStateFancy(j)
 						states_list.append(j)
 						j._cans.sort()
 						a += 1
@@ -134,6 +135,102 @@ class SokobanSolver:
 				if ((state._robot[0] , state._robot[1]) == (i,j)): e = "△" #Can
 				line = line + str(e) + " "
 			print(line)
+	
+	def complexity_both(self, begining):
+		self.targets.sort()
+		states_list = [begining]
+		begining = 0
+		end = 1
+		a = 0
+		b = 0
+		while (True):
+			a = 0
+			for i in range(begining, end):
+				b = b + 1
+				new = self.generate_new_states(states_list[i], i)
+				for j in new:
+					if j not in states_list and self.check_stuck(j._cans) == False:
+						states_list.append(j)
+						j._cans.sort()
+						a += 1
+						if self.targets == j._cans:
+							return len(states_list) / b
+			begining = end
+			end += a
+			if a == 0:
+				print("no")
+				return len(states_list)/ b
+
+	def complexity_stuck(self, begining):
+		self.targets.sort()
+		states_list = [begining]
+		begining = 0
+		end = 1
+		a = 0
+		b = 0
+		while (True):
+			a = 0
+			for i in range(begining, end):
+				b = b + 1
+				new = self.generate_new_states(states_list[i], i)
+				for j in new:
+					if self.check_stuck(j._cans) == False:
+						states_list.append(j)
+						j._cans.sort()
+						a += 1
+						if self.targets == j._cans:
+							return len(states_list) / b
+			begining = end
+			end += a
+			if a == 0:
+				return len(states_list)/ b
+	
+	def complexity_not(self, begining):
+		self.targets.sort()
+		states_list = [begining]
+		begining = 0
+		end = 1
+		a = 0
+		b = 0
+		while (True):
+			a = 0
+			for i in range(begining, end):
+				b = b + 1
+				new = self.generate_new_states(states_list[i], i)
+				for j in new:
+					if j not in states_list:
+						states_list.append(j)
+						j._cans.sort()
+						a += 1
+						if self.targets == j._cans:
+							return len(states_list) / b
+			begining = end
+			end += a
+			if a == 0:
+				return len(states_list)/ b
+	
+	def complexity_bf(self, begining):
+		self.targets.sort()
+		states_list = [begining]
+		begining = 0
+		end = 1
+		a = 0
+		b = 0
+		while (True):
+			a = 0
+			for i in range(begining, end):
+				b = b + 1
+				new = self.generate_new_states(states_list[i], i)
+				for j in new:
+					states_list.append(j)
+					j._cans.sort()
+					a += 1
+					if self.targets == j._cans:
+						return len(states_list) / b
+			begining = end
+			end += a
+			if a == 0:
+				return len(states_list)/ b
 
 #	def check(list1, list2):
 #	for i in list1:
