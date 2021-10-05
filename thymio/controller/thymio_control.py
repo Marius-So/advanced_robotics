@@ -88,12 +88,15 @@ def main():
 
 #------------------- Main ------------------------
 
+#-------------- Obstacle avoidance ---------------
+# maybe this is possible to check all the time with a slave process but idk
 def wall_detection():
-    print()
+    print('test')
 
 #------------------- loop ------------------------
 
 def loop():
+
     #robot.drive(200, 200)
     print("nothing to do.. zzz")
     sleep(5)
@@ -107,8 +110,15 @@ def loop():
 if __name__ == '__main__':
     try:
         main()
-    except:
+    except KeyboardInterrupt:
         print("Stopping robot")
+        exit_now = True
+        sleep(1)
+        os.system("pkill -n asebamedulla")
+        print("asebamodulla killed")
+    except Exception as e:
+        print("Stopping robot")
+        print(e)
         exit_now = True
         sleep(1)
         os.system("pkill -n asebamedulla")
