@@ -4,6 +4,8 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
+
+# this is the puzzle generator
 def generate_all(min, max, ncans, prob):
 	x = randint(min,max)
 	y = randint(min,max)
@@ -38,6 +40,7 @@ def generate_all(min, max, ncans, prob):
 	return [board, cans, target, robot]
 
 if __name__ == "__main__":
+	# this code here runs the solver experiment
 	time_1_can = []
 	time_2_can = []
 	size = []

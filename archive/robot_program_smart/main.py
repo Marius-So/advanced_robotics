@@ -155,16 +155,17 @@ class moving_robot():
 		my_data = []
 		dist = 0
 		for _ in range(50):
-			my_data = my_data + [(dist, self.sensor_left.ambient(), self.sensor_left.reflection(), self.sensor_left.color())]
-			self.move_forward(2)
-			dist = dist + 2
+			my_data = my_data + [(dist, self.sensor_right.ambient(), self.sensor_right.reflection(), self.sensor_right.color())]
+			self.move_forward(-1.2)
+			dist = dist + 1
 			wait(200)
 		for e in my_data: print(e)
-		#print_csv(my_data)
 
 
 if __name__ == "__main__":
 	my_robot = moving_robot()
-	plan = [0, 2,2,1,1,0]
+	my_robot.gatherSensorInfo()
+
+	#plan = [0, 2,2,1,1,0]
 	#[0,1,2,0] # 0 left, 1 straigt, 2 right, 3 would be turn 180 degree
-	my_robot.follow_route(plan)
+	#my_robot.follow_route(plan)
