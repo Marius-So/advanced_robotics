@@ -16,10 +16,10 @@ class Thymio:
     def drive(self, left_wheel_speed, right_wheel_speed):
         print("Left_wheel_speed: " + str(left_wheel_speed))
         print("Right_wheel_speed: " + str(right_wheel_speed))
-        
+
         left_wheel = left_wheel_speed
         right_wheel = right_wheel_speed
-        
+
         self.aseba.SendEventName("motor.target", [left_wheel, right_wheel])
 
     def stop(self):
@@ -76,7 +76,7 @@ class Thymio:
 def main():
     robot = Thymio()
 
-    #robot.sens() 
+    #robot.sens()
 
     thread = Thread(target=robot.sens)
     thread.daemon = True
@@ -85,12 +85,13 @@ def main():
     robot.drive(200, 200)
     sleep(5)
     robot.stop()
-       
+
 
 #------------------- Main loop end ------------------------
 
 if __name__ == '__main__':
     try:
+        os.system("pkill -n asebamedulla")
         main()
     except KeyboardInterrupt:
         print("Stopping robot")
