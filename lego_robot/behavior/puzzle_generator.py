@@ -107,16 +107,28 @@ for i in range(len(average_2_can)):
         ecart_type_2[-1] += (average_2_can[i] - j) ** 2
     ecart_type_2[-1] = (ecart_type_2[-1] / size) ** 0.5
 
+ecart_type_real_1 = []
+for i in range(len(average_time_1_can)):
+	ecart_type_real_1.append(0)
+	for j in real_time_1_can[i]:
+		ecart_type_real_1[-1] += (average_time_1_can[i] - j) ** 2
+	ecart_type_real_1[-1] = (ecart_type_real_1[-1] / size) ** 0.5
 
+ecart_type_real_2 = []
+for i in range(len(average_time_2_can)):
+	ecart_type_real_2.append(0)
+	for j in real_time_2_can[i]:
+		ecart_type_real_2[-1] += (average_time_2_can[i] - j) ** 2
+	ecart_type_real_2[-1] = (ecart_type_real_2[-1] / size) ** 0.5
 
 with open("data1can.csv", 'w') as myfile:
 	wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
 	for i in range(len(average_1_can)):
-		wr.writerow([i+4, average_1_can[i], ecart_type_1[i], average_time_1_can[i]])
+		wr.writerow([i+4, average_1_can[i], ecart_type_1[i], average_time_1_can[i], ecart_type_real_1[i]])
 
 with open("data2can.csv", 'w') as myfile:
 	wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
 	for i in range(len(average_2_can)):
-		wr.writerow([i+4, average_2_can[i], ecart_type_2[i], average_time_2_can[i]])
+		wr.writerow([i+4, average_2_can[i], ecart_type_2[i], average_time_2_can[i], ecart_type_real_2[i]])
 
 plt.show()
