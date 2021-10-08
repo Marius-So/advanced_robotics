@@ -3,75 +3,132 @@ from random import randint
 import time
 import matplotlib.pyplot as plt
 import numpy as np
+import statistics
+import csv 
+
+size = 20
 
 
 # this is the puzzle generator
-def generate_all(min, max, ncans, prob):
-	x = randint(min,max)
-	y = randint(min,max)
+def generate_all(x, y, ncans, prob):
 	cans = []
 	target = []
-	robot = (-1, -1)
+	robot = (0, 1)
+	walls = []
 	while len(cans) < ncans:
-		n = (randint(1,y - 2), randint(1,x - 2))
-		if n not in cans:
+		n = (1, randint(1,x - 2))
+		if n not in cans and n != robot:
 			cans.append(n)
 	while len(target) < ncans:
-		n = (randint(0,y - 1), randint(0,x - 1))
-		if n not in cans and n not in target:
+		n = (y-1, randint(0,x - 1))
+		if n not in cans and n not in target and n != robot:
 			target.append(n)
-	while robot == (-1, -1):
-		r = (randint(0,y - 1), randint(0,x - 1))
-		if r not in cans:
-			robot = r
 	board = []
 	for i in range(y):
 		new_line = []
 		for j in range(x):
-			if (j,i) not in cans and (j,i) not in target and (j,i) != robot:
-				a = randint(0,prob)
-				if a == 0:
-					new_line.append(1)
-				else:
-					new_line.append(0)
-			else:
-				new_line.append(0)
+			new_line.append(0)
 		board.append(new_line)
+	while len(walls) < prob * x * y:
+		n = (randint(0, y-1), randint(0,x - 1))
+		if n not in cans and n not in target and n != robot and n not in walls:
+			walls.append(n)
+			board[n[0]][n[1]] = 1
 	return [board, cans, target, robot]
 
 if __name__ == "__main__":
 	# this code here runs the solver experiment
 	time_1_can = []
 	time_2_can = []
-	size = []
+	real_time_1_can = []
+	real_time_2_can = []
 	for i in range(4, 12):
-		time_1_can.append(0)
-		size.append(i)
-		for j in range(30):
-			a = generate_all(i, i + 1, 1, 6)
+		time_1_can.append([])
+		real_time_1_can.append([])
+		for j in range(size):
+			a = generate_all(i, i, 1, 0.25)
 			init_state = State(a[1],a[3], -1)
 			solver = SokobanSolver(a[0], a[2], a[3], a[1])
-			print(i)
+			#solver.printStateFancy(init_state)
 			a = time.time()
-			solver.solve_sokoban(init_state)
-			time_1_can[-1] += (time.time() - a) / 30
+			time_1_can[-1].append(len(solver.solve_sokoban(init_state)))
+			real_time_1_can[-1].append(time.time() - a)
 			del(init_state)
 			del(solver)
-	for i in range(4, 6):
-		time_2_can.append(0)
-		for j in range(30):
-			a = generate_all(i, i + 1, 2, 6)
+	for i in range(4, 8):
+		time_2_can.append([])
+		real_time_2_can.append([])
+		for j in range(size):
+			a = generate_all(i, i, 2, 0.25)
 			init_state = State(a[1],a[3], -1)
 			solver = SokobanSolver(a[0], a[2], a[3], a[1])
-			print(i)
-			a = time.time()
 			solver.solve_sokoban(init_state)
-			time_2_can[-1] += (time.time() - a) / 30
+			a = time.time()
+			time_2_can[-1].append(len(solver.solve_sokoban(init_state)))
+			real_time_2_can[-1].append(time.time() - a)
 			del(init_state)
 			del(solver)
-	for i in range(6,12):
-		time_2_can.append(np.nan)
-	print("---------------------")
-	plt.plot(size, time_1_can, )
-	plt.plot(size, time_2_can)
-	plt.show()
+
+average_1_can = []
+for i in time_1_can:
+	average_1_can.append(0)
+	for j in i:
+		average_1_can[-1] += j / size
+
+average_time_1_can = []
+for i in real_time_1_can:
+	average_time_1_can.append(0)
+	for j in i:
+		average_time_1_can[-1] += j / size
+
+average_time_2_can = []
+for i in real_time_2_can:
+	average_time_2_can.append(0)
+	for j in i:
+		average_time_2_can[-1] += j / size
+
+average_2_can = []
+for i in time_2_can:
+	average_2_can.append(0)
+	for j in i:
+		average_2_can[-1] += j / size
+
+ecart_type_1 = []
+for i in range(len(average_1_can)):
+	ecart_type_1.append(0)
+	for j in time_1_can[i]:
+		ecart_type_1[-1] += (average_1_can[i] - j) ** 2
+	ecart_type_1[-1] = (ecart_type_1[-1] / size) ** 0.5
+
+ecart_type_2 = []
+for i in range(len(average_2_can)):
+    ecart_type_2.append(0)
+    for j in time_2_can[i]:
+        ecart_type_2[-1] += (average_2_can[i] - j) ** 2
+    ecart_type_2[-1] = (ecart_type_2[-1] / size) ** 0.5
+
+ecart_type_real_1 = []
+for i in range(len(average_time_1_can)):
+	ecart_type_real_1.append(0)
+	for j in real_time_1_can[i]:
+		ecart_type_real_1[-1] += (average_time_1_can[i] - j) ** 2
+	ecart_type_real_1[-1] = (ecart_type_real_1[-1] / size) ** 0.5
+
+ecart_type_real_2 = []
+for i in range(len(average_time_2_can)):
+	ecart_type_real_2.append(0)
+	for j in real_time_2_can[i]:
+		ecart_type_real_2[-1] += (average_time_2_can[i] - j) ** 2
+	ecart_type_real_2[-1] = (ecart_type_real_2[-1] / size) ** 0.5
+
+with open("data1can.csv", 'w') as myfile:
+	wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+	for i in range(len(average_1_can)):
+		wr.writerow([i+4, average_1_can[i], ecart_type_1[i], average_time_1_can[i], ecart_type_real_1[i]])
+
+with open("data2can.csv", 'w') as myfile:
+	wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+	for i in range(len(average_2_can)):
+		wr.writerow([i+4, average_2_can[i], ecart_type_2[i], average_time_2_can[i], ecart_type_real_2[i]])
+
+plt.show()
