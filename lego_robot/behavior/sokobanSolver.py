@@ -122,8 +122,10 @@ class SokobanSolver:
 
 
 	def printStateFancy(self, state):
+		line2 = "⊠ " * (len(self.board[0]) + 1)
+		print(line2)
 		for i in range(len(self.board)):
-			line = ""
+			line = "⊠"
 			for j in range(len(self.board[i])):
 				e = self.board[i][j]
 				if(e == 0): e = " "	  #Empty
@@ -134,7 +136,9 @@ class SokobanSolver:
 					if(c == (i,j)): e = "⬤" #Can
 				if ((state._robot[0] , state._robot[1]) == (i,j)): e = "△" #Can
 				line = line + str(e) + " "
+			line += "⊠"
 			print(line)
+		print(line2)
 	
 	def complexity_both(self, begining):
 		self.targets.sort()
