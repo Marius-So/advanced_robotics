@@ -6,8 +6,9 @@ import numpy as np
 import statistics
 import csv 
 
-size = 20
-
+size = 5 #samples
+maxSizeBoard = 20
+infil = 0
 
 # this is the puzzle generator
 def generate_all(x, y, ncans, prob):
@@ -16,11 +17,11 @@ def generate_all(x, y, ncans, prob):
 	robot = (0, 1)
 	walls = []
 	while len(cans) < ncans:
-		n = (1, randint(1,x - 2))
+		n = (1, x - 2)
 		if n not in cans and n != robot:
 			cans.append(n)
 	while len(target) < ncans:
-		n = (y-1, randint(0,x - 1))
+		n = (y-1, x - 1)
 		if n not in cans and n not in target and n != robot:
 			target.append(n)
 	board = []
@@ -42,26 +43,31 @@ if __name__ == "__main__":
 	time_2_can = []
 	real_time_1_can = []
 	real_time_2_can = []
-	for i in range(4, 12):
+	for i in range(4, maxSizeBoard):
+		print('Size: ' + str(i))
 		time_1_can.append([])
 		real_time_1_can.append([])
 		for j in range(size):
-			a = generate_all(i, i, 1, 0.25)
+			print("Iteration: " + str(j))
+			a = generate_all(i, i, 1, infil)
 			init_state = State(a[1],a[3], -1)
 			solver = SokobanSolver(a[0], a[2], a[3], a[1])
-			#solver.printStateFancy(init_state)
+			solver.printStateFancy(init_state)
 			a = time.time()
 			time_1_can[-1].append(len(solver.solve_sokoban(init_state)))
 			real_time_1_can[-1].append(time.time() - a)
 			del(init_state)
 			del(solver)
-	for i in range(4, 8):
+	for i in range(4, 4):
+		print('Size: ' + str(i))
 		time_2_can.append([])
 		real_time_2_can.append([])
 		for j in range(size):
-			a = generate_all(i, i, 2, 0.25)
+			print("Iteration: " + str(j))
+			a = generate_all(i, i, 2, infil)
 			init_state = State(a[1],a[3], -1)
 			solver = SokobanSolver(a[0], a[2], a[3], a[1])
+			solver.printStateFancy(init_state)
 			solver.solve_sokoban(init_state)
 			a = time.time()
 			time_2_can[-1].append(len(solver.solve_sokoban(init_state)))
@@ -130,5 +136,7 @@ with open("data2can.csv", 'w') as myfile:
 	wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
 	for i in range(len(average_2_can)):
 		wr.writerow([i+4, average_2_can[i], ecart_type_2[i], average_time_2_can[i], ecart_type_real_2[i]])
+
+print(real_time_1_can)
 
 plt.show()
