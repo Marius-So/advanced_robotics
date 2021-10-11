@@ -28,7 +28,7 @@ for line in world:
 i = 0
 
 for line in lines:
-	if i % 50 == 0:
+	if i % 1 == 0:
 		a, b, c = line.split(",")
 		x = float(a)
 		y = float(b)

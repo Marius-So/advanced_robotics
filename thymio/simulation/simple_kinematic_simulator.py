@@ -9,21 +9,25 @@ from random import random
 ###########
 R = 0.02  # radius of wheels in meters
 L = 0.10  # distance between wheels in meters
+weight = 0.27 # (in kg)
 
 W = 2.0  # width of arena
 H = 2.0  # height of arena
-w = 0.112 # width of the robot
-h = 0.11 # height of the robot
+w = 0.112 # x of the robot
+l = 0.11 # y of the robot
+h = 0.053 # z of the robot
 
 simulation_timestep = 0.01  # timestep in kinematics sim (probably don't touch..)
 
-# the world is a rectangular arena with width W and height H
 walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2], [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
-robot_shape = [[-w/2, w/2, -h/2, -h/2], [-w/2, w/2, h/2, h/2], [w/2, w/2, -h/2, h/2], [-w/2, -w/2, h/2, -h/2]]
+robot_shape = [[-w/2, w/2, -l/2, -l/2], [-w/2, w/2, l/2, l/2], [w/2, w/2, -l/2, l/2], [-w/2, -w/2, l/2, -l/2]]
+sensor_shape = [[-0.4, -0.4, l/2, h/2 + 0.16], [-0.2, -0.2, l/2, l/2 + 0.16], [0, 0, l/2, l/2 + 0.16], [0.2, 0.2, l/2, l/2 + 0.16], [0.4, 0.4, l/2, l/2 + 0.16], [-0.3, -0.3, -l/2, -l/2 - 0.16], [0.3, 0.3, -l/2, -l/2 - 0.16]]
 
 # Variables 
 ###########
 
+coo = []
+speed = [0,0]
 x = 0.0   # robot position in meters - x direction - positive to the right 
 y = 0.0   # robot position in meters - y direction - positive up
 q = 1.57079632679   # robot heading with respect to x-axis in radians 
@@ -53,7 +57,7 @@ def how_far_seg2_from_seg1(seg1, seg2):
 			minx2 = min(seg2[0], seg2[1])
 			maxx2 = max(seg2[0], seg2[1])
 			if x >= minx1 and x >= minx2 and x <= maxx1 and x <= maxx2:
-				return ((x - seg1[0]) ** 2 + (x * coef2 + offset2 - seg1[2]) ** 2) ** 0.5
+				return x, x * coef2 + offset2
 	elif dx1 != 0:
 		coef1 = dy1 / dx1
 		offset1 = seg1[2] - coef1 * seg1[0]
@@ -64,7 +68,7 @@ def how_far_seg2_from_seg1(seg1, seg2):
 			miny2 = min(seg2[2], seg2[3])
 			maxy2 = max(seg2[2], seg2[3])
 			if y > miny2 and y < maxy2:
-				return ((seg1[0] - seg2[0]) ** 2 + (seg1[2] - y) ** 2) ** 0.5
+				return seg2[0], y
 	elif dx2 != 0:
 		coef2 = dy2 / dx2
 		offset2 = seg2[2] - coef2 * seg2[0]
@@ -75,56 +79,109 @@ def how_far_seg2_from_seg1(seg1, seg2):
 			miny1 = min(seg1[2], seg1[3])
 			maxy1 = max(seg1[2], seg1[3])
 			if y > miny1 and y < maxy1:
-				return abs(seg1[2] - y)
-	return -1
+				return seg1[0], y
+	return -1, -1
+
+def frotements():
+	global x,y,q, h, w, speed
+	#air_volumic_mass = 1.229
+	#drag coefficient = 0.5
+	surface = w*h
+	ret = [[[0,0], [-speed[0]**2,-speed[1]**2]]]
+	ret[0][1][0] *= w*h*1.229*0.5
+	ret[0][1][1] *= w*h*1.229*0.5
+	return ret
+
+def roues():
+	global y
+	if y == 0:
+		return [[[0,0], [0,5]], [[0,0], [0,5]]]
+	return [[[0,0], [0,0]]]
 
 def collision():
-	global x, y, q
+	global x, y, q, coo
 	for s in robot_shape:
-		angle = q + 1.57079632679
+		angle = q - 1.57079632679
 		ss = [x + s[0] * cos(angle) + s[2] * sin(angle), x + s[1] * cos(angle) + s[3] * sin(angle), y + s[2] * cos(angle) - s[0] * sin(angle), y + s[3] * cos(angle) - s[1] * sin(angle)]
 		for w in walls:
-			if how_far_seg2_from_seg1(ss,w) != -1:
-				return True
-	return False
+			d = how_far_seg2_from_seg1(ss,w)
+			if d != (-1, -1):
+				print(d[0], d[1])
+				print(x - coo[-2][0], y - coo[-2][1])				
+	return []
 	
-
-def simulationstep():
+def sensor():
 	global x, y, q
-	v_x = cos(q)*(R*left_wheel_velocity/2 + R*right_wheel_velocity/2) 
-	v_y = sin(q)*(R*left_wheel_velocity/2 + R*right_wheel_velocity/2)
-	omega = (R*right_wheel_velocity - R*left_wheel_velocity)/(2*L)    
-	x += v_x * simulation_timestep
-	y += v_y * simulation_timestep
-	q += omega * simulation_timestep
+	ret = []
+	for s in sensor_shape:
+		angle = q - 1.57079632679
+		ss = [x + s[0] * cos(angle) + s[2] * sin(angle), x + s[1] * cos(angle) + s[3] * sin(angle), y + s[2] * cos(angle) - s[0] * sin(angle), y + s[3] * cos(angle) - s[1] * sin(angle)]
+		minv = 99999999
+		for w in walls:
+			v = how_far_seg2_from_seg1(ss,w)
+			if v != (-1,-1):
+				d = ((ss[0] - v[0]) ** 2 + (ss[2] - v[1]) ** 2) ** 0.5
+				if d < minv:
+					minv = d
+		if minv > 16:
+			ret.append(0)
+		else:
+			#ret.append(0.00007*minv**4 + 0.025*minv**3 - 2.9084*minv**2 + 103.76*minv + 3567.7) the equation suck
+			ret.append(minv)
+	return ret
+
+def pfd(forces):
+	global x, y, q, speed
+	
+	#v_x = cos(q)*(R*left_wheel_velocity/2 + R*right_wheel_velocity/2) 
+	#v_y = sin(q)*(R*left_wheel_velocity/2 + R*right_wheel_velocity/2)
+	#omega = (R*right_wheel_velocity - R*left_wheel_velocity)/(2*L)    
+	#x += v_x * simulation_timestep
+	#y += v_y * simulation_timestep
+	#q += omega * simulation_timestep
+	result = [0,0]
+	for i in forces:
+		result[0] += i[1][0]
+		result[1] += i[1][1]
+	result[0] /= weight
+	result[1] /= weight
+	speed[0] += result[0] * simulation_timestep
+	speed[1] += result[1] * simulation_timestep
+	x += speed[0] * simulation_timestep
+	y += speed[1] * simulation_timestep
 
 # Simulation loop
 #################
-file = open("walls.dat", "w")
-to_print = ""
-for w in walls:
-	for j in range(3):
-		to_print += str(w[j]) + ','
-	to_print += str(w[3]) + '\n'
-to_print += "--\n"
-for w in robot_shape:
-	for j in range(3):
-		to_print += str(w[j]) + ','
-	to_print += str(w[3]) + '\n'
-file.write(to_print)
-file.close()
-	
-file = open("trajectory.dat", "w")
-
 for cnt in range(500):
     #step simulation
-	simulationstep()
-	if collision():
-		file.write( str(x) + "," + str(y) + "," + str(q) + "\n")
-		break
+	forces = []
+	forces.extend(roues())
+	forces.extend(frotements())
+	forces.extend(collision())
+	pfd(forces)
     #check collision with arena walls 
-        
-	file.write( str(x) + "," + str(y) + "," + str(q) + "\n")
+	coo.append([x, y, q])
 
+to_print_w = ""
+for w in walls:
+    for j in range(3):
+        to_print_w += str(w[j]) + ','
+    to_print_w += str(w[3]) + '\n'
+to_print_w += "--\n"
+for w in robot_shape:
+    for j in range(3):
+        to_print_w += str(w[j]) + ','
+    to_print_w += str(w[3]) + '\n'
+
+to_print_c = ""
+for i in coo:
+	for j in range(2):
+		to_print_c += str(i[j]) + ','
+	to_print_c += str(i[2]) + '\n'
+
+file = open("walls.date", "w")
+file.write(to_print_w)
 file.close()
-    
+file = open("trajectory.dat", "w")
+file.write(to_print_c)
+file.close()   
