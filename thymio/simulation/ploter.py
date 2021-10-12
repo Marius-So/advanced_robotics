@@ -24,7 +24,7 @@ for line in world:
 		robot.append(line[:-1].split(','))
 		for i in range(len(robot[-1])):
 			robot[-1][i] = float(robot[-1][i])
-
+print(robot)
 i = 0
 
 for line in lines:
