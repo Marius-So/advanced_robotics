@@ -61,9 +61,14 @@ class Thymio:
             self.stopAsebamedulla()
 
     def turn_around_center(self, speed): # speed in radiants per second
-        self.left_wheel_velocity = speed
-        self.right_wheel_velocity = -speed
-        self.drive()
+        if self.left_wheel_velocity != speed or self.right_wheel_velocity != -speed:
+            self.left_wheel_velocity = speed
+            self.right_wheel_velocity = -speed
+            self.drive()
+
+    def drive_adj(self, left_wheel, right_wheel):
+        if left_wheel !=  self.left_wheel_velocity or right_wheel != self.right_wheel_velocity:
+            self.drive()
 
     def drive(self):
         print("Left_wheel_speed: " + str(self.left_wheel_speed))
@@ -169,26 +174,26 @@ class Thymio:
     def simple_control(self):
         loop_time = 0.1
         #simple controller - change direction of wheels every 10 seconds (100*robot_timestep) unless close to wall then turn on spot
-        for i in range(1000):
-
+        for cnt in range(1000):
             if self.wall_detection():
+                print('detected a wall')
                 speed = 0.4
                 self.turn_around_center(speed=speed)
             else:
                 if cnt%50==0:
                     left_wheel_velocity = random()
                     right_wheel_velocity = random()
-
+                    self.drive_adj()
             self.simulation_step(loop_time)
-
+            sleep(loop_time)
 
 #----------------- loop end ---------------------
 
 #------------------ Main -------------------------
 
 def main():
-    robot_loop = 1/10
-    simu_loop = 1/100
+    #robot_loop = 1/10
+    #simu_loop = 1/100
     robot = Thymio()
 
     # starting robot sensors
@@ -204,12 +209,12 @@ def main():
     camera_thread.daemon = True
     camera_thread.start()
 
-    #starting loop
-    while True:
-        robot.simple_control()
+    robot.simple_control()
 
-
-
+    ##starting loop
+    #while True:
+    #    robot.simple_control()
+    robot.turn_off()
 
 if __name__ == '__main__':
     try:
