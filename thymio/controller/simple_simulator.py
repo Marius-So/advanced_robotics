@@ -26,8 +26,8 @@ x = 0.0   # robot position in meters - x direction - positive to the right
 y = 0.0   # robot position in meters - y direction - positive up
 q = 0.0   # robot heading with respect to x-axis in radians
 
-left_wheel_velocity =  0.12  # robot left wheel velocity in radians/s
-right_wheel_velocity = 0.08  # robot right wheel velocity in radians/s
+left_wheel_velocity =  random()   # robot left wheel velocity in radians/s
+right_wheel_velocity =  random()  # robot right wheel velocity in radians/s
 
 # Kinematic model
 #################
@@ -56,7 +56,13 @@ for cnt in range(5000):
     distance = sqrt((s.x-x)**2+(s.y-y)**2)                    # distance to wall
 
     #simple controller - change direction of wheels every 10 seconds (100*robot_timestep) unless close to wall then turn on spot
-    robot_timestep * 50
+    if (distance < 0.5):
+        left_wheel_velocity = -0.4
+        right_wheel_velocity = 0.4
+    else:
+        if cnt%100==0:
+            left_wheel_velocity = random()
+            right_wheel_velocity = random()
 
     #step simulation
     simulationstep()
@@ -66,7 +72,7 @@ for cnt in range(5000):
         break
 
     if cnt%50==0:
-        file.write( str(x) + "," + str(y) + "," + str(q) + "\n")
+        file.write( str(x) + ", " + str(y) + ", " + str(cos(q)*0.05) + ", " + str(sin(q)*0.05) + "\n")
 
 file.close()
 
