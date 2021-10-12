@@ -17,6 +17,8 @@ from picamera import PiCamera # camera control
 
 # import simple_simulation
 
+# represent the world
+# we want to use a grid -> robot is positioned in a cell
 
 # global setups
 
@@ -45,6 +47,9 @@ class Thymio:
             self.camera.stop_preview()
             self.stopAsebamedulla()
 
+    def turn_around_center(self, speed):
+        self.drive(speed, - speed)
+
 
     def drive(self, left_wheel_speed, right_wheel_speed):
         print("Left_wheel_speed: " + str(left_wheel_speed))
@@ -63,14 +68,8 @@ class Thymio:
     def sens_dist(self):
         while True:
             # is an array with 5 entries for the 5 sensors
-            prox_horizontal = self.aseba.GetVariable("thymio-II", "prox.horizontal")
+            self.prox_horizontal = self.aseba.GetVariable("thymio-II", "prox.horizontal")
             sleep(0.01)
-            #print("Sensing:")
-            #print(prox_horizontal[0])
-            #print(prox_horizontal[1])
-            #print(prox_horizontal[2])
-            #print(prox_horizontal[3])
-            #print(prox_horizontal[4])
 
     def sens_lidar(self):
         while True:
@@ -85,6 +84,7 @@ class Thymio:
         while True:
             self.sens_camera = np.empty((240, 320, 3), dtype=np.uint8)
             self.camera.capture(self.sens_camera , 'bgr')
+            sleep(1)
 
 
 ############## Bus and aseba setup ######################################
@@ -147,6 +147,7 @@ def main():
 #-------------- Obstacle avoidance ---------------
 # maybe this is possible to check all the time with a slave process but idk
 def wall_detection():
+    if self.prox_horizontal
 
     print('test')
 
@@ -154,6 +155,7 @@ def wall_detection():
 
 def loop():
     # get next move / plan moves
+
 
     # move / execute
 
@@ -167,8 +169,7 @@ def loop():
 
     # obstackle avoidance -> input: to get next move
 
-
-    #robot.drive(200, 200)
+    # robot.drive(200, 200)
     print("nothing to do.. zzz")
     sleep(5)
     #robot.stop()

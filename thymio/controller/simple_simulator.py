@@ -19,12 +19,12 @@ simulation_timestep = 0.01  # timestep in kinematics sim (probably don't touch..
 # the world is a rectangular arena with width W and height H
 world = LinearRing([(W/2,H/2),(-W/2,H/2),(-W/2,-H/2),(W/2,-H/2)])
 
-# Variables 
+# Variables
 ###########
 
-x = 0.0   # robot position in meters - x direction - positive to the right 
+x = 0.0   # robot position in meters - x direction - positive to the right
 y = 0.0   # robot position in meters - y direction - positive up
-q = 0.0   # robot heading with respect to x-axis in radians 
+q = 0.0   # robot heading with respect to x-axis in radians
 
 left_wheel_velocity =  0.12  # robot left wheel velocity in radians/s
 right_wheel_velocity = 0.08  # robot right wheel velocity in radians/s
@@ -37,10 +37,10 @@ def simulationstep():
     global x, y, q
 
     for step in range(int(robot_timestep/simulation_timestep)):     #step model time/timestep times
-        v_x = cos(q)*(R*left_wheel_velocity/2 + R*right_wheel_velocity/2) 
+        v_x = cos(q)*(R*left_wheel_velocity/2 + R*right_wheel_velocity/2)
         v_y = sin(q)*(R*left_wheel_velocity/2 + R*right_wheel_velocity/2)
-        omega = (R*right_wheel_velocity - R*left_wheel_velocity)/(2*L)    
-    
+        omega = (R*right_wheel_velocity - R*left_wheel_velocity)/(2*L)
+
         x += v_x * simulation_timestep
         y += v_y * simulation_timestep
         q += omega * simulation_timestep
@@ -54,18 +54,19 @@ for cnt in range(5000):
     ray = LineString([(x, y), (x+cos(q)*2*W,-(y+sin(q)*2*H)) ])  # a line from robot to a point outside arena in direction of q
     s = world.intersection(ray)
     distance = sqrt((s.x-x)**2+(s.y-y)**2)                    # distance to wall
-    
+
     #simple controller - change direction of wheels every 10 seconds (100*robot_timestep) unless close to wall then turn on spot
-        
+    robot_timestep * 50
+
     #step simulation
     simulationstep()
 
-    #check collision with arena walls 
+    #check collision with arena walls
     if (world.distance(Point(x,y))<L/2):
         break
-        
+
     if cnt%50==0:
         file.write( str(x) + "," + str(y) + "," + str(q) + "\n")
 
 file.close()
-    
+
