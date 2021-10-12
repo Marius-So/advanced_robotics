@@ -15,6 +15,8 @@ from threading import Thread
 from adafruit_rplidar import RPLidar # distance sensor
 from picamera import PiCamera # camera control
 
+# import simple_simulation
+
 
 # global setups
 
@@ -33,11 +35,16 @@ class Thymio:
         self.camera = PiCamera()
         self.camera.start_preview()
         sleep(2)
+
         self.camera.resolution = (320, 240)
         self.camera.framerate = 24
         self.sens_camera = None
 
     # camera.stop_preview()
+    def turn_off(self):
+            self.camera.stop_preview()
+            self.stopAsebamedulla()
+
 
     def drive(self, left_wheel_speed, right_wheel_speed):
         print("Left_wheel_speed: " + str(left_wheel_speed))
