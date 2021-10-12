@@ -76,7 +76,7 @@ def collision(walls,x,y,q):
 				return True
 	return False
 
-def lidar_sensor(walls,x,y,q):
+def lidar_sensor(walls,x,y,q): #return (array[0..359]) of lectures of lildar
 	ret = []
 	for i in range(0,360):
 		angle = q + i / 57.2957795131 - 1.57079632679
@@ -90,7 +90,7 @@ def lidar_sensor(walls,x,y,q):
 		ret.append(minv)
 	return ret
 			
-
+#return the output of the 7 InfraRed Sensors in the thymio.
 def thymio_sensor(walls, x,y,q):
 	ret = []
 	for s in sensor_shape:
