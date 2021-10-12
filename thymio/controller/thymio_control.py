@@ -16,7 +16,7 @@ from threading import Thread
 from adafruit_rplidar import RPLidar # distance sensor
 from picamera import PiCamera # camera control
 
-from simple_kinetic_simulator import kinetic_simulator
+from kinetic_simulator import kinetic_simulator
 
 # represent the world
 # we want to use a grid -> robot is positioned in a cell
@@ -31,6 +31,7 @@ class Thymio:
         # setting up the lidar setup
         PORT_NAME = '/dev/ttyUSB0'
         self.lidar = RPLidar(None, PORT_NAME)
+
         self.scan_data = [0]*360
         self.exit_now = False
 
@@ -197,9 +198,9 @@ def main():
     robot = Thymio()
 
     # starting robot sensors
-    lidar_thread = Thread(target=robot.sens_lidar)
-    lidar_thread.daemon = True
-    lidar_thread.start()
+    #lidar_thread = Thread(target=robot.sens_lidar)
+    #lidar_thread.daemon = True
+    #lidar_thread.start()
 
     thymio_thread = Thread(target=robot.sens_dist)
     thymio_thread.daemon = True
