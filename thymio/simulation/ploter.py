@@ -5,7 +5,7 @@ from time import sleep
 file = open("trajectory.dat", "r")
 lines = file.readlines()
 file.close()
-file = open("walls.dat", "r")
+file = open("walls.date", "r")
 world = file.readlines()
 file.close()
 
