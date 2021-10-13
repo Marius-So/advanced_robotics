@@ -165,3 +165,13 @@ if __name__ == "__main__":
 	simulator = kinetic_simulator(walls)
 	coo = simulator.simulate(0, 0, 0, 10, 10, 5)[0]
 	simulator.save(coo, walls)
+
+    # round env?!
+    #   walls = []
+	#   for i in range(0,360, 10):
+	#   	angle = i / 57.2957795131
+	#   	angle2 = (i + 10) / 57.2957795131
+	#   	walls.append([cos(angle), cos(angle2), sin(angle), sin(angle2)])
+	#   simulator = kinetic_simulator(walls)
+	#   coo = simulator.simulate(0, 0, 0, 10, 10, 5)[0]
+	#   simulator.save(coo, walls)
