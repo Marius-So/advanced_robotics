@@ -87,9 +87,10 @@ class kinetic_simulator:
 			minv = 999999999
 			for w in self.walls:
 				v = self.how_far_seg2_from_seg1(ss,w)
-				d = ((ss[0] - v[0]) ** 2 + (ss[2] - v[1]) ** 2) ** 0.5
-				if d < minv:
-					minv = d
+				if v != (-1,-1):
+					d = ((ss[0] - v[0]) ** 2 + (ss[2] - v[1]) ** 2) ** 0.5
+					if d < minv:
+						minv = d
 			ret.append(minv)
 		return ret
 
