@@ -163,6 +163,8 @@ if __name__ == "__main__":
     walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2], [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
 
     simulator = kinetic_simulator(walls)
-    print(max(simulator.lidar_sensor(0,0,0)))
-    print(simulator.thymio_sensor(0,i/100,1.57079632679))
-    simulator.save(coo[0], walls)
+    result = simulator.simulate(0,0,0,1,1,1)
+    print(result)
+    #print(max(simulator.lidar_sensor(0,0,0)))
+    #print(simulator.thymio_sensor(0,i/100,1.57079632679))
+    #simulator.save(coo[0], walls)
