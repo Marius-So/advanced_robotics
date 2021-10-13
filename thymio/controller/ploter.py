@@ -5,7 +5,7 @@ from time import sleep
 file = open("trajectory.dat", "r")
 lines = file.readlines()
 file.close()
-file = open("walls.date", "r")
+file = open("walls.dat", "r")
 world = file.readlines()
 file.close()
 
@@ -24,11 +24,10 @@ for line in world:
 		robot.append(line[:-1].split(','))
 		for i in range(len(robot[-1])):
 			robot[-1][i] = float(robot[-1][i])
-print(robot)
 i = 0
 
 for line in lines:
-	if i % 1 == 0:
+	if i % 10 == 0:
 		a, b, c = line.split(",")
 		x = float(a)
 		y = float(b)
