@@ -134,7 +134,6 @@ class kinetic_simulator:
             for j in range(3):
                 to_print_w += str(w[j]) + ','
             to_print_w += str(w[3]) + '\n'
-
         to_print_c = ""
         for i in coo:
             for j in range(2):
@@ -158,11 +157,11 @@ class kinetic_simulator:
         return coo
 
 if __name__ == "__main__":
-    W = 2.0  # width of arena
-    H = 2.0  # height of arenai
-    walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2], [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
-
-    simulator = kinetic_simulator(walls)
-    print(max(simulator.lidar_sensor(0,0,0)))
-    print(simulator.thymio_sensor(0,i/100,1.57079632679))
-    simulator.save(coo[0], walls)
+	walls = []
+	for i in range(0,360, 10):
+		angle = i / 57.2957795131
+		angle2 = (i + 10) / 57.2957795131
+		walls.append([cos(angle), cos(angle2), sin(angle), sin(angle2)])
+	simulator = kinetic_simulator(walls)
+	coo = simulator.simulate(0, 0, 0, 10, 10, 5)[0]
+	simulator.save(coo, walls)
