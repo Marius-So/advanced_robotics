@@ -67,7 +67,7 @@ class kinetic_simulator:
 				maxy1 = max(seg1[2], seg1[3])
 				if y > miny1 and y < maxy1:
 					return seg1[0], y
-		return -1, -1
+		return None
 
 	def collision(self,x,y,q):
 		for s in self.robot_shape:
@@ -87,7 +87,7 @@ class kinetic_simulator:
 			minv = 999999999
 			for w in self.walls:
 				v = self.how_far_seg2_from_seg1(ss,w)
-				if v != (-1,-1):
+				if v != None:
 					d = ((ss[0] - v[0]) ** 2 + (ss[2] - v[1]) ** 2) ** 0.5
 					if d < minv:
 						minv = d
@@ -161,15 +161,15 @@ class kinetic_simulator:
 
 if __name__ == "__main__":
 	walls = []
-	for i in range(0,360, 10):
+	for i in range(0,360, 1):
 		angle = i / 57.2957795131
 		angle2 = (i + 10) / 57.2957795131
 		walls.append([cos(angle), cos(angle2), sin(angle), sin(angle2)])
 	simulator = kinetic_simulator(walls)
 	sim = simulator.lidar_sensor(0,0,0)
 	print(sum(sim)/len(sim))
-	print(sim.index(max(sim)))
-	print(sim[sim.index(max(sim))])
+	print(max(sim))
+	print(min(sim))
 	
 	coo = simulator.simulate(0, 0, 0, 10, 10, 5)
 	simulator.save(coo[0], walls)
