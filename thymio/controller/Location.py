@@ -1,3 +1,4 @@
+import csv
 from copy import copy, deepcopy
 import numpy as np
 import cv2
@@ -5,11 +6,12 @@ import math
 from simple_kinematic_simulator import kinetic_simulator
 from random import randint, randrange, sample
 
-
 def getPointValues(i, j, angle, W, H, resolution, walls):
     angle = 0
     ks = kinetic_simulator(walls)
-    x, y = j * resolution - (W - resolution)/ 2, -i * resolution + (H - resolution) / 2
+    # I have the feeling that this convertion to x,y is wrong
+    x, y = j * resolution - (W - resolution) / 2, - \
+        i * resolution + (H - resolution) / 2
     return ks.lidar_sensor(x, y, angle)
 
 
@@ -22,7 +24,7 @@ def generateSampleTest(size):
     return current, sample
 
 
-def method(W, H, resolution, walls):
+def getSimulatedValues(W, H, resolution, walls):
     map = [[0 for i in range(int(W/resolution))]
            for j in range((int)(H/resolution))]
     simuRes = deepcopy(map)
@@ -37,7 +39,7 @@ def method(W, H, resolution, walls):
 
 
 def compare(current, simulated):
-    differences = sample = [[[0 for i in range(len(current))] for j in range(
+    differences = [[[0 for i in range(len(current))] for j in range(
         len(current))] for k in range(len(current))]
     for i in range(len(simulated)):
         #print("i = " + str(i))
@@ -60,18 +62,61 @@ def compare(current, simulated):
             print("sum: " + str(sum))
             sum = 0
     print("summatory: " + str(summatory))
+    toPrint(summatory)
 
     # in percentage:
-    percent = [[0] * len(summatory)] * len(summatory[0])
-    totalSum = 0
-    for s in sum:
-        totalSum = totalSum + s
-    for s in sum:
-        aux = s/totalSum
-        percent.append(aux)
-    # print(percent)
+    tot = 0
+    for i in range(len(summatory)):
+        for j in range(len(summatory[i])):
+            tot = tot + summatory[i][j]
+    percent = [[0] * len(differences)] * len(differences[0])
+    for i in range(len(summatory)):
+        for j in range(len(summatory[i])):
+            percent[i][j] = summatory[i][j]/tot
+    print(percent)
 
-    return min(sum)
+    # to get the position of the min:
+    minPosition = (0, 0)
+    min = 99999
+    for i in range(len(summatory)):
+        for j in range(len(summatory[i])):
+            if(summatory[i][j] < min):
+                min = summatory[i][j]
+                minPosition = (i, j)
+    print(minPosition)
+
+
+def toPrint(list):  # two three-dimensional list
+    print("toPrint")
+    tp = []
+    
+    for i in range(len(list)):
+        aux = []
+        for j in range(len(list)):
+            aux.append(list[i][j])
+            print(aux)
+        tp.append(aux)
+        aux.clear
+    print(tp)
+
+    print("end")
+
+    for i in range(len(list)):
+        line = []
+        for j in range(len(list[i])):
+            line.append(i)
+            line.append(j)
+            line.append(list[i][j])
+            print(line)
+            tp.append(line)
+    print("tp:" + str(tp))
+
+
+def write_csv(list, filename: str):
+    with open(filename, 'w') as f:
+        writer = csv. writer(f)
+        for n in range(len(list)):
+            writer.writerow([ns[i]] + res[i, :]. tolist())
 
 
 if __name__ == "__main__":
@@ -82,7 +127,6 @@ if __name__ == "__main__":
     walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2],
              [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
 
-    # method(W,H,resolution,walls)
-    #compare(current, simulated)
-    current, sample = generateSampleTest(2)
-    compare(current, sample)
+    print(getPointValues(0,0,0,W,H,resolution,walls))
+    #current, sample = generateSampleTest(2)
+    #compare(current, sample)
