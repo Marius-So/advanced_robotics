@@ -1,6 +1,6 @@
 from numpy import sin, cos, pi, sqrt, nan
 
-class kinetic_simulator:
+class kinematic_simulator:
 	def __init__(self, walls, simulation_timestep = 0.01) -> None:
 
 		# A prototype simulation of a differential-drive robot with one sensor
@@ -75,7 +75,7 @@ class kinetic_simulator:
 			ss = [x + s[0] * cos(angle) + s[2] * sin(angle), x + s[1] * cos(angle) + s[3] * sin(angle), y + s[2] * cos(angle) - s[0] * sin	(angle), y + s[3] * cos(angle) - s[1] * sin(angle)]
 			for w in self.walls:
 				d = self.how_far_seg2_from_seg1(ss,w)
-				if d != (-1, -1):
+				if d != None:
 					return True
 		return False
 
@@ -104,7 +104,7 @@ class kinetic_simulator:
 			minv = 99999999
 			for w in self.walls:
 				v = self.how_far_seg2_from_seg1(ss,w)
-				if v != (-1,-1):
+				if v != None:
 					d = ((ss[0] - v[0]) ** 2 + (ss[2] - v[1]) ** 2) ** 0.5
 					if d < minv:
 						minv = d
@@ -160,16 +160,11 @@ class kinetic_simulator:
 		return coo
 
 if __name__ == "__main__":
-	walls = []
-	for i in range(0,360, 1):
-		angle = i / 57.2957795131
-		angle2 = (i + 10) / 57.2957795131
-		walls.append([cos(angle), cos(angle2), sin(angle), sin(angle2)])
+	h = 1
+	w = 1
+	walls = [[-w/2, -w/2, -h/2, h/2], [w/2, w/2, -h/2,h/2],[-w/2,w/2,h/2,h/2],[-w/2,w/2,-h/2,-h/2]]
 	simulator = kinetic_simulator(walls)
-	sim = simulator.lidar_sensor(0,0,0)
-	print(sum(sim)/len(sim))
-	print(max(sim))
-	print(min(sim))
-	
+	#sim = simulator.lidar_sensor(0,0,0)
+	#print(sim)	
 	coo = simulator.simulate(0, 0, 0, 10, 10, 5)
 	simulator.save(coo[0], walls)
