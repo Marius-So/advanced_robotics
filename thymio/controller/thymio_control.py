@@ -29,6 +29,8 @@ import sys
 import cv2
 from matplotlib import pyplot as plt
 
+from Map import Map
+from Location import Location
 # represent the world
 # we want to use a grid -> robot is positioned in a cell
 
@@ -79,6 +81,8 @@ class Thymio:
         self.right_wheel_velocity =  round(random()*20)  # robot right wheel velocity in angle/s
 
         self.loop_time = 0
+
+        self.loc = Location(H,W,(0,0))
 
     def turn_off(self):
             if CAMERA:
@@ -303,10 +307,15 @@ class Thymio:
                 if CAMERA:
                     side = self.robot_vision.get_side(self.picture)
                     print(f'side is {side}')
-                #break
+                    self.q = side * math.pi/2
+
+                print(self.loc.recursion(self.scan_data[::-180], (0,0), 0, self.q))
+                print(self.loc.data)
+                print(self.scan_data)
 
 
             sleep(self.loop_time)
+
 
 
 

@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 import math
 from numpy.lib.function_base import append, diff
-from kinematic_simulator import kinetic_simulator
+from kinematic_simulator import kinematic_simulator
 from random import randint, sample
 
 
@@ -13,8 +13,10 @@ class Location:
         self.data = [[]]
         walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2],
              [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
-        self.ks = kinetic_simulator(walls)
+        self.ks = kinematic_simulator(walls)
         self.testPoint = testPoint
+        self.H = H
+        self.W = W
 
     def getPointValues(self, i, j, angle = 0):
         return self.ks.lidar_sensor(i, j, angle)
@@ -43,10 +45,10 @@ class Location:
     def getSamplePoints(self, prev, depth):
         #print("getSample depth: " + str(depth))
         samplePoints = []
-        p1 = (prev[0] + H/(2**(depth+2)), prev[1] - W/(2**(depth+2)))
-        p2 = (prev[0] + H/(2**(depth+2)), prev[1] + W/(2**(depth+2)))
-        p3 = (prev[0] - H/(2**(depth+2)), prev[1] + W/(2**(depth+2)))
-        p4 = (prev[0] - H/(2**(depth+2)), prev[1] - W/(2**(depth+2)))
+        p1 = (prev[0] + self.H/(2**(depth+2)), prev[1] - self.W/(2**(depth+2)))
+        p2 = (prev[0] + self.H/(2**(depth+2)), prev[1] + self.W/(2**(depth+2)))
+        p3 = (prev[0] - self.H/(2**(depth+2)), prev[1] + self.W/(2**(depth+2)))
+        p4 = (prev[0] - self.H/(2**(depth+2)), prev[1] - self.W/(2**(depth+2)))
         samplePoints.append(p1)
         samplePoints.append(p2)
         samplePoints.append(p3)
@@ -54,7 +56,7 @@ class Location:
         #print(samplePoints)
         return samplePoints
 
-    def recursion(self, realValues, prev, depth):
+    def recursion(self, realValues, prev, depth, angle):
         dataDepth = []
         # depth = depth + 1
         # cutoffFunction
@@ -72,15 +74,15 @@ class Location:
         minFitability = 999999
         #print(sample)
         for point in sample:
-            simulatedValues = self.getPointValues(point[0], point[1])
+            simulatedValues = self.getPointValues(point[0], point[1], angle)
             fitability = self.getFitability(realValues, simulatedValues)
 
             if(minFitability > fitability):
                 minFitability = fitability
                 bestPoint = point
-        #print("bestPoint: " + str(bestPoint))
+        print("bestPoint: " + str(bestPoint))
         #print("Fitability: " + str(fitability))
-        self.recursion(realValues, bestPoint, depth + 1)
+        self.recursion(realValues, bestPoint, depth + 1, angle)
 
     def write_csv(self, filename: str):
         header = ["depth", "x", "y", "distance"]
