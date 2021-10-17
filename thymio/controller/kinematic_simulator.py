@@ -1,6 +1,6 @@
 from numpy import sin, cos, pi, sqrt, nan
 
-class kinetic_simulator:
+class kinematic_simulator:
 	def __init__(self, walls, simulation_timestep = 0.01) -> None:
 
 		# A prototype simulation of a differential-drive robot with one sensor
@@ -17,8 +17,8 @@ class kinetic_simulator:
 
 		self.simulation_timestep = simulation_timestep  # timestep in kinematics sim (probably don't touch..)
 
-		self.robot_shape = [[-self.w/2, self.w/2, -self.l/2, -self.l/2], [-self.w/2, self.w/2, self.l/2, self.l/2], [self.w/2, self.w/2, -self.l/2, self.l/2], [-self.w/2, -self.w/2, self.l/2, -self.l/2]]
-		self.sensor_shape = [[-0.4, -0.4, self.l/2, self.h/2 + 0.16], [-0.2, -0.2, self.l/2, self.l/2 + 0.16], [0, 0, self.l/2, self.l/2 + 0.16], [0.2, 0.2, self.l/2, self.l/2 + 0.16], [0.4, 0.4, self.l/2, self.l/2 + 0.16], [-0.3, -0.3, -self.l/2, -self.l/2 - 0.16], [0.3, 0.3, -self.l/2, -self.l/2 - 0.16]]
+		self.robot_shape = [[-self.l/2, self.l/2, -self.w/2, -self.w/2], [-self.l/2, self.l/2, self.w/2, self.w/2], [self.l/2, self.l/2, -self.w/2, self.w/2], [-self.l/2, -self.l/2, self.w/2, -self.w/2]]
+		self.sensor_shape = [[self.l/2, self.l/2 + 0.16, -0.04, -0.04], [self.l/2, self.l/2 + 0.16, -0.02, -0.02], [self.l/2, self.l/2 + 0.16, 0, 0], [self.l/2, self.l/2 + 0.16, 0.02, 0.02], [self.l/2, self.l/2 + 0.16, 0.04, 0.04], [-self.l/2, -self.l/2 - 0.16, -0.03, -0.03], [-self.l/2, -self.l/2 - 0.16, 0.03, 0.03]]
 
 		self.walls = walls
 		# Kinematic model
@@ -71,19 +71,18 @@ class kinetic_simulator:
 
 	def collision(self,x,y,q):
 		for s in self.robot_shape:
-			angle = q - 1.57079632679
-			ss = [x + s[0] * cos(angle) + s[2] * sin(angle), x + s[1] * cos(angle) + s[3] * sin(angle), y + s[2] * cos(angle) - s[0] * sin	(angle), y + s[3] * cos(angle) - s[1] * sin(angle)]
+			ss = [x + s[0] * cos(q) + s[2] * sin(q), x + s[1] * cos(q) + s[3] * sin(q), y + s[2] * cos(q) - s[0] * sin(q), y + s[3] * cos(q) - s[1] * sin(q)]
 			for w in self.walls:
 				d = self.how_far_seg2_from_seg1(ss,w)
-				if d != (-1, -1):
+				if d != None:
 					return True
 		return False
 
 	def lidar_sensor(self,x,y,q):
 		ret = []
 		for i in range(0,360):
-			angle = q + i / 57.2957795131 
-			ss = [x, x + 10 * cos(angle), y, y + 10 * sin(angle)]
+			angle = q + i / 57.2957795131
+			ss = [x, x + 15 * cos(angle), y, y + 15 * sin(angle)]
 			minv = 999999999
 			for w in self.walls:
 				v = self.how_far_seg2_from_seg1(ss,w)
@@ -99,20 +98,15 @@ class kinetic_simulator:
 	def thymio_sensor(self,x,y,q):
 		ret = []
 		for s in self.sensor_shape:
-			angle = q - 1.57079632679
-			ss = [x + s[0] * cos(angle) + s[2] * sin(angle), x + s[1] * cos(angle) + s[3] * sin(angle), y + s[2] * cos(angle) - s[0] * sin	(angle), y + s[3] * cos(angle) - s[1] * sin(angle)]
+			ss = [x + s[0] * cos(q) + s[2] * sin(q), x + s[1] * cos(q) + s[3] * sin(q), y + s[2] * cos(q) - s[0] * sin(q), y + s[3] * cos(q) - s[1] * sin(q)]
 			minv = 99999999
 			for w in self.walls:
 				v = self.how_far_seg2_from_seg1(ss,w)
-				if v != (-1,-1):
+				if v != None:
 					d = ((ss[0] - v[0]) ** 2 + (ss[2] - v[1]) ** 2) ** 0.5
 					if d < minv:
 						minv = d
-			if minv > 16:
-				ret.append(0)
-			else:
-				#ret.append(0.00007*minv**4 + 0.025*minv**3 - 2.9084*minv**2 + 103.76*minv + 3567.7) the equation suck
-				ret.append(minv)
+			ret.append(minv)
 		return ret
 
 	def step(self, x, y, q, r_w_v, l_w_v):
@@ -125,9 +119,9 @@ class kinetic_simulator:
 		q += omega * self.simulation_timestep
 		return [x, y, q]
 
-	def save(self, coo, walls):
+	def save(self, coo):
 		to_print_w = ""
-		for w in walls:
+		for w in self.walls:
 		    for j in range(3):
 		        to_print_w += str(w[j]) + ','
 		    to_print_w += str(w[3]) + '\n'
@@ -156,20 +150,16 @@ class kinetic_simulator:
 			x, y, q = self.step(x,y,q,r_w_v, l_w_v)
 			coo.append([x,y,q])
 			if self.collision(x,y,q):
-				return coo,
+				return coo
 		return coo
 
 if __name__ == "__main__":
-	walls = []
-	for i in range(0,360, 1):
-		angle = i / 57.2957795131
-		angle2 = (i + 10) / 57.2957795131
-		walls.append([cos(angle), cos(angle2), sin(angle), sin(angle2)])
-	simulator = kinetic_simulator(walls)
-	sim = simulator.lidar_sensor(0,0,0)
-	print(sum(sim)/len(sim))
-	print(max(sim))
-	print(min(sim))
-	
-	coo = simulator.simulate(0, 0, 0, 10, 10, 5)
-	simulator.save(coo[0], walls)
+	h = 1
+	w = 1
+	walls = [[-w/2, -w/2, -h/2, h/2], [w/2, w/2, -h/2,h/2],[-w/2,w/2,h/2,h/2],[-w/2,w/2,-h/2,-h/2]]
+	simulator = kinematic_simulator(walls)
+	sim = simulator.lidar_sensor(0.1,0.1,0)
+	print(sim[0], sim[90], sim[180], sim[270])
+	print(simulator.thymio_sensor(0.3, 0.3, 0))
+	#coo = simulator.simulate(0, 0, 0, 10, 10, 5)
+	#simulator.save(coo[0])

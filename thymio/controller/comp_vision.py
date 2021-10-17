@@ -1,98 +1,113 @@
+import  matplotlib.pyplot as plt
 import cv2
 import numpy as np
+import apriltag
+import math
 
-class vision:
+from time import sleep
+
+class robot_vision:
     def __init__(self) -> None:
         self.vision = None
-        self.angle = None
-        self.red_mask = None
-        self.blue_mask = None
-        self.yellow_mask = None
-        self.green_mask = None
-        self.updated = False
-
-        self.masks = {'green': self.green_mask,
-                    'blue': self.blue_mask,
-                    'red': self.red_mask,
-                    'yellow': self.yellow_mask}
-
-        self.centers = {'green': None,
-                    'blue': None,
-                    'red': None,
-                    'yellow': None}
-
-    def update_vision(self, k_size = 8):
-        input_hsv = cv2.cvtColor(self.vision, cv2.COLOR_BGR2HSV)
-        kernel = np.ones((k_size, k_size), np.uint8)
-
-        # lower mask (0-10)
-        lower_red = np.array([0,50,50])
-        upper_red = np.array([10,255,255])
-        mask0 = cv2.inRange(input_hsv, lower_red, upper_red)
-
-        # upper mask (170-180)
-        lower_red = np.array([170,50,50])
-        upper_red = np.array([180,255,255])
-        mask1 = cv2.inRange(input_hsv, lower_red, upper_red)
-
-        # join my masks
-        self.red_mask = mask0+mask1
-        self.red_mask = cv2.threshold(self.red_mask, 1, 255, cv2.THRESH_BINARY)[1]
-        self.red_mask = cv2.morphologyEx(self.red_mask, cv2.MORPH_OPEN, kernel)
-
-        # blue
-        lower_blue = np.array([110,50,50])
-        upper_blue = np.array([130,255,255])
-        self.blue_mask = cv2.inRange(input_hsv, lower_blue, upper_blue)
-        self.blue_mask = cv2.threshold(self.blue_mask, 1, 255, cv2.THRESH_BINARY)[1]
-        self.blue_mask = cv2.morphologyEx(self.blue_mask, cv2.MORPH_OPEN, kernel)
-
-        # green
-        lower_green = np.array([50,50,50])
-        upper_green = np.array([70,255,255])
-        self.green_mask = cv2.inRange(input_hsv, lower_green, upper_green)
-        self.green_mask = cv2.threshold(self.green_mask, 1, 255, cv2.THRESH_BINARY)[1]
-        self.green_mask = cv2.morphologyEx(self.green_mask, cv2.MORPH_OPEN, kernel)
-
-        # yellow
-        lower_yellow = np.array([25,50,50])
-        upper_yellow = np.array([35,255,255])
-        self.yellow_mask = cv2.inRange(input_hsv, lower_yellow, upper_yellow)
-        self.yellow_mask = cv2.threshold(self.yellow_mask, 1, 255, cv2.THRESH_BINARY)[1]
-        self.yellow_mask = cv2.morphologyEx(self.yellow_mask, cv2.MORPH_OPEN, kernel)
-
-    def update_centers(self):
-        for mask in self.masks:
-            M = cv2.moments(self.masks[mask])
-            if not round(M["m10"]):
-                self.centers[mask] = int(M["m10"] / M["m00"]).self.masks[mask].shape[0]
-            else:
-                self.centers[mask] = None
-
-    def get_most_confident(self):
-        biggest_ = 0
-        best_mask = None
-        for mask in self.masks:
-            mass = np.sum(self.masks[mask])
-            if mass :
+        self.det_result = None
+        self.detector = apriltag.Detector()
+        H = 1
+        W = 2
+        self.centers = {
+            0: (0.5 * W, 0 * H),
+            1: (0.5 * W, -0.45 * H),
+            2: (0.475 * W, -0.5 * H),
+            3: (0.25 * W, -0.5 * H),
+            4: (0 * W, -0.5 * H),
+            5: (-0.25 * W, -0.5 * H),
+            6: (-0.475 * W, -0.5 * H),
+            7: (- 0.5 * W, -0.45 * H),
+            8: (- 0.5 * W, 0 * H),
+            9: (- 0.5 * W, 0.45 * H),
+            10: (-0.475 * W, 0.5 * H),
+            11: (-0.25 * W, 0.5 * H),
+            12: (0 * W, 0.5 * H),
+            13: (0.25 * W, 0.5 * H),
+            14: (0.475 * W, 0.5 * H),
+            15: (0.5 * W, 0.45 * H)
+        }
+        self.corners = {
+            0:(-0.5 * W, 0.5 * H),
+            1:(-0.5 * W, -0.5 * H),
+            2:(0.5 * W, -0.5 * H),
+            3:(0.5 * W, 0.5 * H)
+        }
+        self.corner_parts = [1,2,6,7,9,10,14,15]
+        self.corners = {(1,2): 0, (6,7):1, (9,10):2, (14,15):3}
 
 
+    def scan_vision(self):
+        self.det_result = self.detector.detect(self.vision)
 
-
-
-# calculate x,y coordinate of center
-
-
-print(cX)
-print(cY)
-
-    def update_vison(self, picture):
+    def update_vision(self, picture):
         self.vision = picture
-        self.updated = True
 
-    def get_most_likely_color(self):
+    def find_corners(self):
+        # assume i can never see three corners at the same time -> otherwise give center corner
+        # because then I am very far away from it
+        number_of_tags = len(self.det_result)
+        self.detected_corners = {}
+        if len(self.det_result) > 0:
+            for tag in range(number_of_tags - 1):
+                # abusign that scan orders the tags in increasing order
+                tag_pair = (self.det_result[tag].tag_id, self.det_result[tag+1].tag_id)
+                if tag_pair in self.corners:
+                    corner = self.corners[tag_pair]
+                    c_center = self.det_result[tag+1].center[0] - self.det_result[tag].center[0] # approximate x pos of corner in picture --> roughly
+                    self.detected_corners[corner] = c_center
+
+    def estimate_rotation(self):
+        #if len(self.detected_corners) == 2:
+        #    # most usual case I would say....
+        #    # thisis what I am looking at
+        #    # this is pretty superficial...
+        focus = self.vision.shape[1] / 2
+
+        # simple approach use most center tag to estimate the rot
+        min_dist = float('inf')
+        min_tag = None
+        for tag in self.det_result:
+            if tag.tag_id < 16:
+                dist = abs(focus - tag.center[0])
+                if dist < min_dist:
+                    min_dist = dist
+                    min_tag = tag.tag_id
+
+        loc_center_tag = self.centers[min_tag]
+        print(min_tag)
+        return math.atan2(loc_center_tag[1],loc_center_tag[0])
+
+    def estimate_rotation(self, picture):
+        vision.update_vision(picture)
+        vision.scan_vision()
+        return vision.estimate_rotation()
 
 
-    def get_rotation(self):
+if __name__ == '__main__':
+    vision = robot_vision()
+    image = cv2.imread('orientation_test/IMG_2887.png')
+
+    img = image
+    scale_percent = 20 # percent of original size
+    width = int(img.shape[1] * scale_percent / 100)
+    height = int(img.shape[0] * scale_percent / 100)
+    dim = (width, height)
+
+    # resize image
+    resized = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+
+    image = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+
+    vision.update_vision(image)
+    vision.scan_vision()
+    print(vision.estimate_rotation())
+    pass
+
+
 
 
