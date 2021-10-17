@@ -1,6 +1,6 @@
 from numpy import sin, cos, pi, sqrt, nan
 
-class kinetic_simulator:
+class kinematic_simulator:
 	def __init__(self, walls, simulation_timestep = 0.01) -> None:
 
 		# A prototype simulation of a differential-drive robot with one sensor
@@ -82,7 +82,7 @@ class kinetic_simulator:
 	def lidar_sensor(self,x,y,q):
 		ret = []
 		for i in range(0,360):
-			angle = q + i / 57.2957795131 
+			angle = q + i / 57.2957795131
 			ss = [x, x + 10 * cos(angle), y, y + 10 * sin(angle)]
 			minv = 999999999
 			for w in self.walls:
@@ -170,6 +170,6 @@ if __name__ == "__main__":
 	print(sum(sim)/len(sim))
 	print(max(sim))
 	print(min(sim))
-	
+
 	coo = simulator.simulate(0, 0, 0, 10, 10, 5)
 	simulator.save(coo[0], walls)
