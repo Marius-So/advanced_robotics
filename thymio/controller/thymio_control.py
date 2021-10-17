@@ -2,6 +2,9 @@
 import os
 import math
 from random import random
+import time
+
+import numpy as np
 # initialize asebamedulla in background and wait 0.3s to let
 # asebamedulla startup
 os.system("(asebamedulla ser:name=Thymio-II &) && sleep 0.3")
@@ -16,6 +19,8 @@ from threading import Thread
 from adafruit_rplidar import RPLidar # distance sensor
 from picamera import PiCamera # camera control
 from picamera.array import PiRGBArray
+
+from comp_vision import robot_vision
 
 from kinematic_simulator import kinematic_simulator
 import traceback
@@ -54,6 +59,8 @@ class Thymio:
             self.camera.framerate = 24
             self.picture = np.empty((240, 320, 3), dtype=np.uint8)
 
+            self.robot_vision = robot_vision()
+
         # distance sensors
         self.prox_horizontal = np.zeros(7)
         self.dist_sens = True
@@ -79,6 +86,7 @@ class Thymio:
             self.dist_sens = False
 
             self.stop()
+            self.lidar.stop()
             self.stopAsebamedulla()
 
     def turn_around_center(self, speed): # speed in angle per second
@@ -86,6 +94,30 @@ class Thymio:
             self.left_wheel_velocity = speed
             self.right_wheel_velocity = -speed
             self.drive()
+
+    def rotate_by(self, speed): # speed in angle per second
+        if self.left_wheel_velocity != speed or self.right_wheel_velocity != -speed:
+            self.left_wheel_velocity = speed
+            self.right_wheel_velocity = -speed
+            self.drive()
+
+    def rotate_by_degree(self, degree): # speed in angle per second
+        if degree < 0:
+            speed = 30
+        else:
+            speed = - 30
+
+        time = (degree * 0.1 / (speed * 0.02 * 2))
+
+        #if self.left_wheel_velocity != speed or self.right_wheel_velocity != -speed:
+        self.left_wheel_velocity = speed
+        self.right_wheel_velocity = -speed
+        self.drive()
+
+        sleep(abs(time))
+        self.stop()
+
+
 
     def drive_adj(self, left_wheel, right_wheel):
         left_wheel = round(left_wheel)
@@ -126,6 +158,60 @@ class Thymio:
             # display the image on screen and wait for a keypress~
             sleep(1)
 
+    def find_correct_rotation(self):
+        # checks the lidar scan and gives back the four corners
+        size = len(self.scan_data) - 1
+        data = self.scan_data
+        minima = []
+        for idx in range(size+2):
+            if data[(idx - 1) % size] > data[(idx) % size] <  data[(idx+1) % size] and data[(idx - 2) % size] > data[(idx) % size] <  data[(idx+2) % size]:
+                minima.append(idx % size)
+        return minima
+
+    def align_robot(self):
+        start_time = time.time()
+        while True:
+            minima = self.find_correct_rotation()
+            if len(minima)==0:
+                sleep(0.1)
+                continue
+            # basically rotate until one of the minima is close to 0
+            #assert len(minima) == 4
+
+            dist = [i -179 for i in minima]
+
+            #req_rot = min(dist)
+            #print(req_rot)
+            req_rot = self.scan_data.index(min(self.scan_data))
+            value = min(self.scan_data)
+            if value == 0:
+                continue
+            print(self.scan_data)
+
+
+            print(f'thsi is the index i go to {req_rot}')
+
+
+            if abs(req_rot) > 4:
+                if req_rot > 179:
+                    #print(f'i will rotate to {-(req_rot-179)}')
+                    self.rotate_by_degree(-(req_rot-360))
+                #    return
+                #else:
+                #    print(f'i will rotate to {req_rot}')
+                else:
+                    self.rotate_by_degree(-req_rot)
+                return
+                #    return
+
+            else:
+                self.stop()
+                break
+            sleep(0.1)
+            if time.time() - start_time > 20:
+                return
+
+
 
 ############## Bus and aseba setup ######################################
     def setup(self):
@@ -162,20 +248,22 @@ class Thymio:
 #-------------- Obstacle avoidance ---------------
 # maybe this is possible to check all the time with a slave process but idk
     def wall_detection(self):
+        if LIDAR and min(self.scan_data[150:210]) < 150:
+            return True
+
         for i in [0,2,4]:
-            if self.prox_horizontal[i] > 3000:
+            if self.prox_horizontal[i] > 500:
                 return True
         return False
         #return any(i > 3000 for i in self.prox_horizontal)
 
 #------------------- loop ------------------------
     def simulation_step(self):
-        self.right_wheel_velocity
-        self.left_wheel_velocity
-        coo = self.simulator.simulate(self.x, self.y, self.q, self.right_wheel_velocity, self.left_wheel_velocity, self.loop_time)[-1]
+        r_rad_speed = math.pi*self.right_wheel_velocity / 180
+        l_rad_speed = math.pi*self.left_wheel_velocity /180
+        coo = self.simulator.simulate(self.x, self.y, self.q, r_rad_speed, l_rad_speed, self.loop_time)[-1]
         if len(coo) == 3:
-            self.x, self.y, self.q
-        sleep(self.loop_time)
+            self.x, self.y, self.q = coo
 
     def loop(self):
         # get next move / plan moves
@@ -199,28 +287,62 @@ class Thymio:
         #robot.stop()
 
     def simple_control(self):
-        left_wheel_velocity = round(random() * 200)
-        right_wheel_velocity = round(random() * 200)
+        self.loop_time = 0.1
+        self.speed_correction = 1.15
+        left_wheel_velocity = 0 * 90 * self.speed_correction
+        right_wheel_velocity = 0 * 90* self.speed_correction
         self.drive_adj(left_wheel_velocity, right_wheel_velocity)
-        self.drive()
-        loop_time = 0.1
-        self.detected = False
-        #simple controller - change direction of wheels every 10 seconds (100*robot_timestep) unless close to wall then turn on spot
-        for cnt in range(200):
-            if self.wall_detection():
-                speed = 70
-                self.turn_around_center(speed=speed)
-                self.detected = True
-            else:
-                if self.detected or cnt%50==0:
-                    self.detected = False
-                    left_wheel_velocity = random() * 200
-                    right_wheel_velocity = random() * 200
-                    self.drive_adj(left_wheel_velocity, right_wheel_velocity)
-            sleep(loop_time)
+        sleep(1)
 
-        self.stop()
-        print(f'x: {self.x}, y: {self.y}, rot : {self.q}')
+        for cnt in range(100):
+            if cnt % 100==0:
+                self.align_robot()
+                print('i am aligned')
+                print('i see wall')
+
+                if CAMERA:
+                    side = self.robot_vision.get_side(self.picture)
+                    print(f'side is {side}')
+                #break
+
+
+            sleep(self.loop_time)
+
+
+
+        #self.speed_correction = 1.15
+        #start_time = time.time()
+        #left_wheel_velocity = 0* 90 * self.speed_correction
+        #right_wheel_velocity = 0* 90* self.speed_correction
+        #self.drive_adj(left_wheel_velocity, right_wheel_velocity)
+        #self.drive()
+        #self.loop_time = 0.1
+        #self.detected = False
+        ##simple controller - change direction of wheels every 10 seconds (100*robot_timestep) unless close to wall then turn on spot
+        #for cnt in range(800):
+        #    if False and self.wall_detection():
+        #        speed = 70
+        #        self.turn_around_center(speed=speed)
+        #        self.detected = True
+        #    else:
+        #        if False: #self.detected or cnt%100==0:
+        #            self.detected = False
+        #            left_wheel_velocity = random() * 200
+        #            right_wheel_velocity = random() * 200
+        #            self.drive_adj(left_wheel_velocity, right_wheel_velocity)
+#
+        #    self.simulation_step()
+        #    if cnt%2==0:
+        #        #print(f'x: {self.x}, y: {self.y}, rot : {(self.q%(2*math.pi)) *180/math.pi}')
+        #        print(self.scan_data[179])
+#
+        #    sleep(self.loop_time)
+#
+        #print(f'time {time.time()- start_time}')
+#
+        #self.stop()
+        #print(f'x: {self.x}, y: {self.y}, rot : {(self.q%(2*math.pi)) *180/math.pi}')
+        #print(self.scan_data)
 
 #----------------- loop end ---------------------
 
@@ -249,9 +371,9 @@ def main():
             camera_thread.daemon = True
             camera_thread.start()
 
-        simulation = Thread(target=robot.simulation_step)
-        simulation.daemon = True
-        simulation.start()
+        # simulation = Thread(target=robot.simulation_step)
+        # simulation.daemon = True
+        # simulation.start()
 
         robot.simple_control()
         robot.turn_off()
