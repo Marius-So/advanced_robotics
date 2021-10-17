@@ -5,7 +5,7 @@ from time import sleep
 file = open("trajectory.dat", "r")
 lines = file.readlines()
 file.close()
-file = open("walls.date", "r")
+file = open("walls.dat", "r")
 world = file.readlines()
 file.close()
 
@@ -24,11 +24,10 @@ for line in world:
 		robot.append(line[:-1].split(','))
 		for i in range(len(robot[-1])):
 			robot[-1][i] = float(robot[-1][i])
-print(robot)
 i = 0
 
 for line in lines:
-	if i % 1 == 0:
+	if i % 10 == 0:
 		a, b, c = line.split(",")
 		x = float(a)
 		y = float(b)
@@ -38,7 +37,7 @@ for line in lines:
 		for w in walls:
 			plt.plot([w[0], w[1]], [w[2], w[3]], 'g')
 		for r in robot:
-			plt.plot([r[0] * cos(-angle + 1.57079632679) + x + r[2] * sin(-angle + 1.57079632679), r[1] * cos(-angle + 1.57079632679) + x + r[3] * sin(-angle + 1.57079632679)], [r[2] * cos(-angle + 1.57079632679) + y - r[0] * sin(-angle + 1.57079632679) , r[3] * cos(-angle + 1.57079632679) + y - r[1] * sin(-angle + 1.57079632679)], 'b')
+			plt.plot([r[0] * cos(-angle) + x + r[2] * sin(-angle), r[1] * cos(-angle) + x + r[3] * sin(-angle)], [r[2] * cos(-angle) + y - r[0] * sin(-angle) , r[3] * cos(-angle) + y - r[1] * sin(-angle)], 'b')
 		plt.pause(0.01)
 		
 	i += 1
