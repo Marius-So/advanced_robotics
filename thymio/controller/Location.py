@@ -9,26 +9,18 @@ from random import randint, sample
 
 
 class Location:
-    def __init__(self, H, W, testPoint=(0, 0)) -> None:
+    def __init__(self, H, W) -> None:
         self.data = [[]]
         self.H = H
         self.W = W
         walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2],
-             [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
+                 [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
         self.ks = kinematic_simulator(walls)
-        self.testPoint = testPoint
         self.H = H
         self.W = W
 
     def getPointValues(self, i, j, angle):
         return self.ks.lidar_sensor(i, j, angle)
-
-    def generateSampleTest(self, size):
-        sample = [randint(0, 5)/10 for i in range(size)]
-        #print("sample: " + str(sample))
-        current = [randint(0, 9) for i in range(size)]
-        #print("current: " + str(current))
-        return current, sample
 
     def getFitability(self, current, simulated):
         differences = [0 for i in range(len(current))]
@@ -68,7 +60,7 @@ class Location:
         dataDepth.append(depth)
         dataDepth.append(prev[0])
         dataDepth.append(prev[1])
-        dataDepth.append(self.getDistance(self.testPoint, prev))
+        #dataDepth.append(self.getDistance(self.testPoint, prev))
         self.data.append(dataDepth)
 
         sample = self.getSamplePoints(prev, depth)
@@ -122,14 +114,14 @@ class Location:
         if(long < short):
             print("ERROR: long is shorter than short")
 
-        #this part needs corrections, the +- will depend on the angle
-        x = self.W/2 - min(l1,l2)/1000
-        y = self.H/2 - min(s1,s2)/1000
+        print("long: " + str(long))
+        print("short: " + str(short))
 
-        print(math.degrees(math.cos(H*1000/long)))  
-        print(math.degrees(math.cos(W*1000/short)))       
-        print(x, y)
-        print(long)
+
+        # this part needs corrections, the +- will depend on the angle
+        x = self.W/2 + min(l1, l2)/1000
+        y = self.H/2 + min(s1, s2)/1000
+
         print("The long value should be gerater or equal to 2000 and is not, maybe we should meassure the board :)")
 
 
@@ -142,6 +134,17 @@ if __name__ == "__main__":
                   762.0, 760.25, 760.0, 758.0, 760.25, 762.5, 761.75, 764.5, 766.0, 766.5, 769.25, 772.25, 772.75, 775.25, 778.0, 783.25, 784.5, 785.0, 792.0, 796.75, 796.5, 803.0, 810.0, 818.5, 817.0, 821.25, 830.25, 842.5, 843.25, 852.25, 862.25, 868.75, 875.0, 887.25, 901.75, 909.75, 917.25, 931.25, 946.5, 947.0, 964.75, 983.25, 993.5, 1004.5, 1024.75, 1050.0, 1058.75, 1070.5, 1186.25, 1066.25, 1052.5, 1039.5, 1020.5, 1010.5, 998.0, 978.75, 960.5, 952.5, 941.5, 928.25, 920.75, 912.75, 897.5, 885.75, 885.25, 874.5, 861.25, 859.5, 851.75, 842.25, 834.75, 832.25, 824.25, 818.25, 815.5, 815.25, 805.75, 798.75, 799.75, 795.0, 790.75, 787.75, 785.25, 782.0, 778.25, 778.0, 776.75, 773.5, 773.75, 771.75, 770.0, 765.75, 765.5, 764.0, 765.25, 768.75, 767.5, 772.75, 773.25, 776.75, 775.25, 778.25, 781.25, 784.5, 785.0, 789.25, 791.75, 793.0, 798.0, 803.75, 811.25, 813.0, 818.0, 825.5, 830.5, 833.5, 839.75, 847.75, 847.25, 809.0, 782.5, 752.5, 745.25, 713.5, 692.25, 685.5, 658.25, 640.0, 634.5, 611.75, 596.75, 592.0, 573.25, 560.5, 556.0, 540.0, 530.25, 526.0, 512.0, 499.25, 497.5, 488.25, 477.25, 470.0, 471.5, 456.75, 451.5, 449.25, 441.5, 436.0, 429.25, 428.0, 419.5, 414.75, 412.5, 407.75, 404.5, 401.75, 397.25, 393.5, 390.75, 389.5, 386.0, 383.75, 381.75, 379.0, 377.5, 376.5, 373.25, 371.5, 370.25, 369.0, 366.75, 365.75, 365.5, 364.5, 363.0, 362.75, 361.75, 361.75, 360.0, 360.0, 359.75, 359.5, 358.75]
     angle = math.pi/2
     loc = Location(H, W)
-    loc.findLocationBySimulation(realValues, angle, (0, 0), 0)
-    print(math.degrees(angle))
-    loc.findLocationByDistance(realValues)
+    #loc.findLocationBySimulation(realValues, angle, (0, 0), 0)
+    # print(math.degrees(angle))
+    # loc.findLocationByDistance(realValues)
+
+    # comparing methods:
+    walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2],
+             [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
+    ks = kinematic_simulator(walls)
+    angle = math.radians(100)
+    testPoint = (0.48, -0.24)
+    current = ks.lidar_sensor(testPoint[0],testPoint[1],angle)
+    print("Real angle: " + str(angle))
+    #loc.findLocationBySimulation(current, 0, (0, 0), 0)
+    loc.findLocationByDistance(current)
