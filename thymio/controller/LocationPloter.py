@@ -14,4 +14,5 @@ ax. set_ylabel ('Distance to target')
 ax. legend (['Distance to target'])
 
 plt.show()
-plt.savefig ('Figure StatesVsStateOneCan.png')
+#plt.savefig ('Figure StatesVsStateOneCan.png')
+

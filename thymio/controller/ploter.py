@@ -41,4 +41,4 @@ for line in lines:
 		plt.pause(0.01)
 		
 	i += 1
-plt.show()
+#plt.show()
