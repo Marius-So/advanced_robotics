@@ -14,9 +14,11 @@ class Location:
         self.H = H
         self.W = W
         walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2],
-                 [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
+             [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
         self.ks = kinematic_simulator(walls)
         self.testPoint = testPoint
+        self.H = H
+        self.W = W
 
     def getPointValues(self, i, j, angle):
         return self.ks.lidar_sensor(i, j, angle)
@@ -45,10 +47,10 @@ class Location:
     def getSamplePoints(self, prev, depth):
         #print("getSample depth: " + str(depth))
         samplePoints = []
-        p1 = (prev[0] + W/(2**(depth+2)), prev[1] - H/(2**(depth+2)))
-        p2 = (prev[0] + W/(2**(depth+2)), prev[1] + H/(2**(depth+2)))
-        p3 = (prev[0] - W/(2**(depth+2)), prev[1] + H/(2**(depth+2)))
-        p4 = (prev[0] - W/(2**(depth+2)), prev[1] - H/(2**(depth+2)))
+        p1 = (prev[0] + self.H/(2**(depth+2)), prev[1] - self.W/(2**(depth+2)))
+        p2 = (prev[0] + self.H/(2**(depth+2)), prev[1] + self.W/(2**(depth+2)))
+        p3 = (prev[0] - self.H/(2**(depth+2)), prev[1] + self.W/(2**(depth+2)))
+        p4 = (prev[0] - self.H/(2**(depth+2)), prev[1] - self.W/(2**(depth+2)))
         samplePoints.append(p1)
         samplePoints.append(p2)
         samplePoints.append(p3)

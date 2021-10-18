@@ -31,6 +31,26 @@ class robot_vision:
             14: (0.475 * W, 0.5 * H),
             15: (0.5 * W, 0.45 * H)
         }
+
+        self.side= {
+            0: 0,
+            1: 0,
+            2: 3,
+            3: 3,
+            4: 3,
+            5: 3,
+            6: 3,
+            7: 2,
+            8: 2,
+            9: 2,
+            10: 1,
+            11: 1,
+            12: 1,
+            13: 1,
+            14: 1,
+            15: 0,
+        }
+
         self.corners = {
             0:(-0.5 * W, 0.5 * H),
             1:(-0.5 * W, -0.5 * H),
@@ -61,6 +81,18 @@ class robot_vision:
                     c_center = self.det_result[tag+1].center[0] - self.det_result[tag].center[0] # approximate x pos of corner in picture --> roughly
                     self.detected_corners[corner] = c_center
 
+    def get_center_tag(self):
+        focus = self.vision.shape[1] / 2
+        min_dist = float('inf')
+        min_tag = None
+        for tag in self.det_result:
+            if tag.tag_id < 16:
+                dist = abs(focus - tag.center[0])
+                if dist < min_dist:
+                    min_dist = dist
+                    min_tag = tag.tag_id
+        return min_tag
+
     def estimate_rotation(self):
         #if len(self.detected_corners) == 2:
         #    # most usual case I would say....
@@ -82,10 +114,19 @@ class robot_vision:
         print(min_tag)
         return math.atan2(loc_center_tag[1],loc_center_tag[0])
 
+    def get_side(self, picture):
+        picture = cv2.cvtColor(picture, cv2.COLOR_BGR2GRAY)
+        self.update_vision(picture)
+        self.scan_vision()
+        #self.side[self.get_center_tag()]
+        # TODO: catch error when he can not see
+        return self.side[self.get_center_tag()]
+
+
     def estimate_rotation(self, picture):
-        vision.update_vision(picture)
-        vision.scan_vision()
-        return vision.estimate_rotation()
+        self.update_vision(picture)
+        self.scan_vision()
+        return self.estimate_rotation()
 
 
 if __name__ == '__main__':
