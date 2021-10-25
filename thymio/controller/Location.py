@@ -121,10 +121,14 @@ class Location:
             x = -self.W/2 + right
             y = -self.H/2 + front
         print("(x,y): " + "(" + str(x) + " , " + str(y) + ")")
-        
+
         print("LONG IS >=W, I GUESS WE DIDNT MEASURE THE MAP PROPERLY OR THE LIDAR HAS AN INSANE ERROR")
         print(math.degrees(math.cos(W/long)))
 
+
+    def findLocationByLidar(self, realValues):
+        center,widthheight,angle = cv2.minAreaRect((np.asarray(realValues)).astype(np.int))
+        return center, widthheight, angle
 
 if __name__ == "__main__":
     # loc.write_csv("thymio\\data\\DataLocationExperiments.csv")
@@ -148,7 +152,8 @@ if __name__ == "__main__":
     # CAREFULL WITH THE . and , the mutherfucker doesnt show an error
     testPoint = (0.1, 0)
     #current = ks.lidar_sensor(testPoint[0], testPoint[1], angle)
-    print("Real angle: " + str(angle) +
+    print("Given angle: " + str(angle) +
           "[rads] " + str(math.degrees(angle)) + "[degrees]")
     #loc.findLocationBySimulation(realValues, 0, (0, 0), 0)
     loc.findLocationByDistance(realValues, angle)
+    #print(loc.findLocationByLidar(0))
