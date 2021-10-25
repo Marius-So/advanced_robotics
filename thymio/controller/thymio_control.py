@@ -58,6 +58,10 @@ class Thymio:
         self.prox_horizontal = np.zeros(7)
         self.distance_sensor_on = True
 
+        # ground sensors
+        self.prox_vertical = np.zeros(2)
+        self.vertical_sensor_on = True
+
         # initial belief of positioning -> zero, zero is center
         self.x = 0
         self.y = 0
@@ -72,7 +76,8 @@ class Thymio:
         self.left_wheel_velocity =  0   # robot left wheel velocity in angle/s
         self.right_wheel_velocity =  0  # robot right wheel velocity in angle/s
 
-        self.loop_time = 0 # this maybe needs to fixed at some point
+        self.loop_time = 0.1 # this maybe needs to fixed at some point seconds
+        self.time_measure = time.time()
         self.loc = Location(H,W,(0,0))
 
     def turn_off(self):
@@ -122,6 +127,10 @@ class Thymio:
         right_wheel = self.right_wheel_velocity
         self.aseba.SendEventName("motor.target", [left_wheel, right_wheel])
 
+    def play_sound(self):
+        sound_name = 'R2D2a.wav'
+        self.aseba.SendEventName("sound.play(1)")
+
     def stop_driving(self):
         self.left_wheel_velocity =  0
         self.right_wheel_velocity =  0
@@ -132,7 +141,14 @@ class Thymio:
             # is an array with 5 entries for the 5 sensors
             self.prox_horizontal = np.array(self.aseba.GetVariable("thymio-II", "prox.horizontal"))
             # TODO: I think this can be done better with scheduling the thread executions
-            sleep(0.01)
+            sleep(0.1)
+
+    def ground_sensing(self):
+        while True and self.vertical_sensor_on:
+            # is an array with 5 entries for the 5 sensors
+            self.prox_vertical = np.array(self.aseba.GetVariable("thymio-II", "prox.ground.reflected"))
+            # TODO: I think this can be done better with scheduling the thread executions
+            sleep(0.1)
 
     def lidar_sensing(self):
         while True and LIDAR:
@@ -150,7 +166,15 @@ class Thymio:
             # also we can take more frames
             sleep(1)
 
+    def simulation(self):
+        while True:
+            self.simulation_step(time.time()-self.time_measure) # hopefully this is seconds
+            self.time_measure = time.time()
+            sleep(self.loop_time)
+
+# ----------- behavior support -------------
     def find_correct_rotation(self):
+        # TODO: maybe this is a bit overkill
         # checks the lidar scan and gives back the four corners
         size = len(self.scan_data) - 1
         data = self.scan_data
@@ -160,6 +184,7 @@ class Thymio:
                 minima.append(idx % size)
         return minima
 
+# ---------- actual robot behaviours ------------
     def align_robot(self):
         # robot behavior to align it within the rectangle
         # it will rotate its back to the closest wall detected by the lidar
@@ -232,37 +257,45 @@ class Thymio:
         return False
 
 #------------------- loop ------------------------
-    def simulation_step(self):
+    def simulation_step(self, simulation_time):
         # TODO: check this properly and try to align simu and reality
+        print('left_wheel_speed')
+        print(self.right_wheel_velocity)
+        print(self.aseba.GetVariable("thymio-II", "motor.left.pwm"))
         r_rad_speed = math.pi*self.right_wheel_velocity / 180
         l_rad_speed = math.pi*self.left_wheel_velocity /180
-        coo = self.simulator.simulate(self.x, self.y, self.q, r_rad_speed, l_rad_speed, self.loop_time)[-1]
+        coo = self.simulator.simulate(self.x, self.y, self.q, r_rad_speed, l_rad_speed, simulation_time)[-1]
         if len(coo) == 3:
             self.x, self.y, self.q = coo
 
     def simple_control(self):
         # this here needs to be fixed, maybe with schduling the execution of the inner loop or so
         self.loop_time = 0.1
-        self.speed_correction = 1.15
+        # self.speed_correction = 1.15
         left_wheel_velocity = 0
         right_wheel_velocity = 0
         self.drive_adj(left_wheel_velocity, right_wheel_velocity)
 
-        for cnt in range(100):
+
+        self.time_measure = time.time()
+        for cnt in range(100): # supposed to be 10s -> well its not
             if cnt % 100==0:
-                self.align_robot()
-                print('i am aligned')
-                print('i see wall')
+                print(f'x : {self.x}, y: {self.y}, q: {self.q}')
+                if cnt == 30:
+                    left_wheel_velocity = 0
+                    right_wheel_velocity = 0
+                    self.drive_adj(left_wheel_velocity, right_wheel_velocity)
+                #self.align_robot()
+                #print('i am aligned')
+                #print('i see wall')
+                #if CAMERA:
+                #    side = self.robot_vision.get_side(self.picture)
+                #    print(f'side is {side}')
+                #    self.q = side * math.pi/2
+                pass
 
-                if CAMERA:
-                    side = self.robot_vision.get_side(self.picture)
-                    print(f'side is {side}')
-                    self.q = side * math.pi/2
-
-                print(self.loc.recursion(self.scan_data[::-180], (0,0), 0, self.q))
-                print(self.loc.data)
-                print(self.scan_data)
             sleep(self.loop_time)
+
 
 #----------------- loop end ---------------------
 #------------------ Main -------------------------
@@ -284,17 +317,22 @@ def main():
         thymio_thread.daemon = True
         thymio_thread.start()
 
+        thymio_thread_vertical = Thread(target=robot.ground_sensing)
+        thymio_thread_vertical.daemon = True
+        thymio_thread_vertical.start()
+
         if CAMERA:
             print('camera is on')
             camera_thread = Thread(target=robot.camera_sensing)
             camera_thread.daemon = True
             camera_thread.start()
 
-        # simulation = Thread(target=robot.simulation_step)
-        # simulation.daemon = True
-        # simulation.start()
+        simulation = Thread(target=robot.simulation_step)
+        simulation.daemon = True
+        simulation.start()
 
         robot.simple_control() # execute the progamm
+        print('im done here')
         robot.turn_off()
 
     except KeyboardInterrupt:
