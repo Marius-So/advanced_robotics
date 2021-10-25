@@ -85,44 +85,45 @@ class Location:
             writer.writerow(header)
             writer.writerows(self.data)
 
-    def findLocationByDistance(self, realValues):
-        a1 = realValues[0]
-        a2 = realValues[180]
-        b1 = realValues[90]
-        b2 = realValues[270]
-
+    def findLocationByDistance(self, realValues, angle):
+        front = realValues[0]/1000
+        back = realValues[180]/1000
+        right = realValues[270]/1000
+        left = realValues[90]/1000
+        #print("front, back, right, left")
+        #print(front, back, right, left)
         long = 0
         short = 0
-        l1 = 0
-        l2 = 0
-        s1 = 0
-        s2 = 0
 
-        if((a1 + a2) >= (b1 + b2)):
-            l1 = a1
-            l2 = a2
-            s1 = b1
-            s2 = b2
+        if((front + back) >= (right + left)):
+            # im looking at 0 or 180 in W direction
+            long = front + back
+            short = right + left
         else:
-            l1 = b1
-            l2 = b2
-            s1 = a1
-            s2 = a2
-
-        long = l1 + l2
-        short = s1 + s2
-        if(long < short):
-            print("ERROR: long is shorter than short")
+            # im looking at 90 or 270 in H direction
+            long = right + left
+            short = front + back
 
         print("long: " + str(long))
         print("short: " + str(short))
 
-
-        # this part needs corrections, the +- will depend on the angle
-        x = self.W/2 + min(l1, l2)/1000
-        y = self.H/2 + min(s1, s2)/1000
-
-        print("The long value should be gerater or equal to 2000 and is not, maybe we should meassure the board :)")
+        #print(front, back, right, left)
+        if(angle == math.radians(0)):
+            x = self.W/2 - front
+            y = self.H/2 - left
+        if(angle == math.radians(90)):
+            x = self.W/2 - right
+            y = self.H/2 - front
+        if(angle == math.radians(180)):
+            x = -self.W/2 + front
+            y = -self.H/2 + left
+        if(angle == math.radians(270)):
+            x = -self.W/2 + right
+            y = -self.H/2 + front
+        print("(x,y): " + "(" + str(x) + " , " + str(y) + ")")
+        
+        print("LONG IS >=W, I GUESS WE DIDNT MEASURE THE MAP PROPERLY OR THE LIDAR HAS AN INSANE ERROR")
+        print(math.degrees(math.cos(W/long)))
 
 
 if __name__ == "__main__":
@@ -142,9 +143,12 @@ if __name__ == "__main__":
     walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2],
              [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
     ks = kinematic_simulator(walls)
-    angle = math.radians(100)
-    testPoint = (0.48, -0.24)
-    current = ks.lidar_sensor(testPoint[0],testPoint[1],angle)
-    print("Real angle: " + str(angle))
-    #loc.findLocationBySimulation(current, 0, (0, 0), 0)
-    loc.findLocationByDistance(current)
+
+    angle = math.radians(0)
+    # CAREFULL WITH THE . and , the mutherfucker doesnt show an error
+    testPoint = (0.1, 0)
+    #current = ks.lidar_sensor(testPoint[0], testPoint[1], angle)
+    print("Real angle: " + str(angle) +
+          "[rads] " + str(math.degrees(angle)) + "[degrees]")
+    #loc.findLocationBySimulation(realValues, 0, (0, 0), 0)
+    loc.findLocationByDistance(realValues, angle)
