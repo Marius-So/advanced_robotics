@@ -3,16 +3,14 @@
 import os
 import math
 from random import random
-import time
 from time import sleep, time
 import traceback
 import sys
 import numpy as np
 
 # thymio specifics
-import dbus
-import dbus.mainloop.glib
 from adafruit_rplidar import RPLidar # distance sensor
+from adafruit_rplidar import RPLidarException
 from picamera import PiCamera # camera control
 
 # our own written modules, present in the same folder for import
@@ -20,12 +18,15 @@ from threading import Thread
 from comp_vision import robot_vision
 from kinematic_simulator import kinematic_simulator
 from Location import Location
+from ThymioController import ThymioController
+
 
 
 # global setups
 # initialize asebamedulla in background and wait 0.3s to let
 # asebamedulla startup
-os.system("(asebamedulla ser:name=Thymio-II &) && sleep 0.3")
+thymio = ThymioController()
+thymio.run()
 
 # bools to completely disable sensors for debugging
 LIDAR = True
@@ -35,7 +36,8 @@ CAMERA = True
 class Thymio:
     def __init__(self, lidar_sensor = True, camera_sensor = True):
         # genereal control from linux over thymio
-        self.setup()
+        self.thymio = ThymioController()
+        self.thymio.run()
 
         # setting up the lidar setup
         if LIDAR:
@@ -77,8 +79,8 @@ class Thymio:
         self.right_wheel_velocity =  0  # robot right wheel velocity in angle/s
 
         self.loop_time = 0.1 # this maybe needs to fixed at some point seconds
-        self.time_measure = time.time()
-        self.loc = Location(H,W,(0,0))
+        self.time_measure = time()
+        self.loc = Location(H,W)#,(0,0))
 
     def turn_off(self):
             if CAMERA:
@@ -86,8 +88,11 @@ class Thymio:
             self.distance_sensor_on = False
 
             self.stop_driving() # stop the robot from moving
-            self.lidar.stop() # stop recording the lidar
-            self.stopAsebamedulla() # disconnect from the thymio
+            if LIDAR:
+                self.lidar.stop() # stop recording the lidar
+            self.thymio.run_on = False
+            sleep(1)
+            # self.thymio.stopAsebamedulla() # disconnect from the thymio
 
     def turn_around_center(self, speed): # speed in angle per second
         # positive speed means clockwise, neg speed means turning anticlockwise
@@ -125,11 +130,10 @@ class Thymio:
     def drive(self):
         left_wheel = self.left_wheel_velocity
         right_wheel = self.right_wheel_velocity
-        self.aseba.SendEventName("motor.target", [left_wheel, right_wheel])
+        self.thymio.set_speed(left_wheel, right_wheel)
 
     def play_sound(self):
-        sound_name = 'R2D2a.wav'
-        self.aseba.SendEventName("sound.play(1)")
+        self.thymio.play_tune()
 
     def stop_driving(self):
         self.left_wheel_velocity =  0
@@ -139,24 +143,27 @@ class Thymio:
     def distance_sensing(self):
         while True and self.distance_sensor_on:
             # is an array with 5 entries for the 5 sensors
-            self.prox_horizontal = np.array(self.aseba.GetVariable("thymio-II", "prox.horizontal"))
+            self.prox_horizontal = np.array(self.thymio.prox_horizontal)
             # TODO: I think this can be done better with scheduling the thread executions
             sleep(0.1)
 
     def ground_sensing(self):
         while True and self.vertical_sensor_on:
             # is an array with 5 entries for the 5 sensors
-            self.prox_vertical = np.array(self.aseba.GetVariable("thymio-II", "prox.ground.reflected"))
+            self.prox_vertical = np.array(self.thymio.ground_reflected)
             # TODO: I think this can be done better with scheduling the thread executions
             sleep(0.1)
 
     def lidar_sensing(self):
         while True and LIDAR:
-            for scan in self.lidar.iter_scans():
+            try:
+                for scan in self.lidar.iter_scans():
 
-                for (_, angle, distance) in scan:
-                    self.scan_data[min([359, math.floor(angle)])] = distance
+                    for (_, angle, distance) in scan:
+                        self.scan_data[min([359, math.floor(angle)])] = distance
             # TODO: I think this can be done better with scheduling the thread executions
+            except RPLidarException:
+                pass
             sleep(0.1)
 
     def camera_sensing(self):
@@ -168,8 +175,8 @@ class Thymio:
 
     def simulation(self):
         while True:
-            self.simulation_step(time.time()-self.time_measure) # hopefully this is seconds
-            self.time_measure = time.time()
+            self.simulation_step(time() - self.time_measure) # hopefully this is seconds
+            self.time_measure = time()
             sleep(self.loop_time)
 
 # ----------- behavior support -------------
@@ -211,36 +218,6 @@ class Thymio:
                 self.stop_driving()
                 return
 
-############## Bus and aseba setup ######################################
-    def setup(self):
-        print("Setting up")
-        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-        bus = dbus.SessionBus()
-        asebaNetworkObject = bus.get_object('ch.epfl.mobots.Aseba', '/')
-
-        asebaNetwork = dbus.Interface(
-            asebaNetworkObject, dbus_interface='ch.epfl.mobots.AsebaNetwork'
-        )
-        # load the file which is run on the thymio
-        asebaNetwork.LoadScripts(
-            'thympi.aesl', reply_handler=self.dbusError, error_handler=self.dbusError
-        )
-        self.aseba = asebaNetwork
-
-    def stopAsebamedulla(self):
-        self.stop_driving()
-        os.system("pkill -n asebamedulla")
-
-    def dbusReply(self):
-        # dbus replys can be handled here.
-        # Currently ignoring
-        pass
-
-    def dbusError(self, e):
-        # dbus errors can be handled here.
-        # Currently only the error is logged. Maybe interrupt the mainloop here
-        print("dbus error: %s" % str(e))
-
 #------------------- Main ------------------------
 
 #-------------- Obstacle avoidance ---------------
@@ -259,12 +236,11 @@ class Thymio:
 #------------------- loop ------------------------
     def simulation_step(self, simulation_time):
         # TODO: check this properly and try to align simu and reality
-        print('left_wheel_speed')
-        print(self.right_wheel_velocity)
-        print(self.aseba.GetVariable("thymio-II", "motor.left.pwm"))
         r_rad_speed = math.pi*self.right_wheel_velocity / 180
         l_rad_speed = math.pi*self.left_wheel_velocity /180
-        coo = self.simulator.simulate(self.x, self.y, self.q, r_rad_speed, l_rad_speed, simulation_time)[-1]
+        coo = self.simulator.simulate(self.x, self.y, self.q, r_rad_speed, l_rad_speed, simulation_time)
+        if coo:
+            coo = coo[-1]
         if len(coo) == 3:
             self.x, self.y, self.q = coo
 
@@ -277,14 +253,20 @@ class Thymio:
         self.drive_adj(left_wheel_velocity, right_wheel_velocity)
 
 
-        self.time_measure = time.time()
+
+        self.time_measure = time()
         for cnt in range(100): # supposed to be 10s -> well its not
+            print(self.scan_data)
+            print(f'cnt: {cnt}')
+            print(f'x : {self.x}, y: {self.y}, q: {self.q}')
+            if cnt == 30:
+                left_wheel_velocity = 100
+                right_wheel_velocity = 50
+                self.drive_adj(left_wheel_velocity, right_wheel_velocity)
+
             if cnt % 100==0:
                 print(f'x : {self.x}, y: {self.y}, q: {self.q}')
-                if cnt == 30:
-                    left_wheel_velocity = 0
-                    right_wheel_velocity = 0
-                    self.drive_adj(left_wheel_velocity, right_wheel_velocity)
+
                 #self.align_robot()
                 #print('i am aligned')
                 #print('i see wall')
@@ -313,13 +295,13 @@ def main():
             lidar_thread.daemon = True
             lidar_thread.start()
 
-        thymio_thread = Thread(target=robot.distance_sensing)
-        thymio_thread.daemon = True
-        thymio_thread.start()
-
-        thymio_thread_vertical = Thread(target=robot.ground_sensing)
-        thymio_thread_vertical.daemon = True
-        thymio_thread_vertical.start()
+        #thymio_thread = Thread(target=robot.distance_sensing)
+        #thymio_thread.daemon = True
+        #thymio_thread.start()
+#
+        #thymio_thread_vertical = Thread(target=robot.ground_sensing)
+        #thymio_thread_vertical.daemon = True
+        #thymio_thread_vertical.start()
 
         if CAMERA:
             print('camera is on')
@@ -327,7 +309,7 @@ def main():
             camera_thread.daemon = True
             camera_thread.start()
 
-        simulation = Thread(target=robot.simulation_step)
+        simulation = Thread(target=robot.simulation)
         simulation.daemon = True
         simulation.start()
 
@@ -340,8 +322,8 @@ def main():
         if robot is not None:
             robot.turn_off()
         sleep(1)
-        os.system("pkill -n asebamedulla")
-        print("asebamodulla killed")
+        #os.system("pkill -n asebamedulla")
+        #print("asebamodulla killed")
     except Exception as e:
         traceback.print_exc(file=sys.stdout)
         if robot is not None:
@@ -349,8 +331,8 @@ def main():
         print("Stopping robot")
         print(e)
         sleep(1)
-        os.system("pkill -n asebamedulla")
-        print("asebamodulla killed")
+        #os.system("pkill -n asebamedulla")
+        #print("asebamodulla killed")
 
 if __name__ == '__main__':
     main()
@@ -359,7 +341,7 @@ if __name__ == '__main__':
 # ------------ old code ------------------
 
         #self.speed_correction = 1.15
-        #start_time = time.time()
+        #start_time = time()
         #left_wheel_velocity = 0* 90 * self.speed_correction
         #right_wheel_velocity = 0* 90* self.speed_correction
         #self.drive_adj(left_wheel_velocity, right_wheel_velocity)
@@ -386,7 +368,7 @@ if __name__ == '__main__':
 #
         #    sleep(self.loop_time)
 #
-        #print(f'time {time.time()- start_time}')
+        #print(f'time {time()- start_time}')
 #
         #self.stop()
         #print(f'x: {self.x}, y: {self.y}, rot : {(self.q%(2*math.pi)) *180/math.pi}')
