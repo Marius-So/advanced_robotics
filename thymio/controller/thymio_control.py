@@ -19,9 +19,7 @@ from comp_vision import robot_vision
 from kinematic_simulator import kinematic_simulator
 import Location_2 as loc
 from ThymioController import ThymioController
-from Map import map
-
-
+from Map import Map
 
 # global setups
 # initialize asebamedulla in background and wait 0.3s to let
@@ -71,11 +69,11 @@ class Thymio:
         self.q = 0 # robot heading with respect to x-axis in radians
 
         # TODO: measure these
-        W = 2.0  # width of arena
-        H = 1.0  # height of arena
+        W = 1.92  # width of arena
+        H = 1.13  # height of arena
         self.walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2], [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
         self.simulator = kinematic_simulator(self.walls)
-        self.map = map(W,H)
+        #self.map = Map(W,H)
 
         self.left_wheel_velocity =  0   # robot left wheel velocity in angle/s
         self.right_wheel_velocity =  0  # robot right wheel velocity in angle/s
@@ -87,6 +85,7 @@ class Thymio:
     def turn_off(self):
             if CAMERA:
                 self.camera.stop_preview()
+                self.camera.close()
             self.distance_sensor_on = False
 
             self.stop_driving() # stop the robot from moving
@@ -258,31 +257,33 @@ class Thymio:
         # self.speed_correction = 1.15
         left_wheel_velocity = 0
         right_wheel_velocity = 0
+        wall_detected = True
         self.drive_adj(left_wheel_velocity, right_wheel_velocity)
 
-
-
         self.time_measure = time()
-        for cnt in range(100): # supposed to be 10s -> well its not
-            print(self.scan_data)
-            print(f'cnt: {cnt}')
-            print(f'x : {self.x}, y: {self.y}, q: {self.q}')
-            if cnt == 30:
-                left_wheel_velocity = 100
-                right_wheel_velocity = 50
+        for cnt in range(500): # supposed to be 10s -> well its not
+            #print(f'x : {self.x}, y: {self.y}, q: {self.q}')
+            if cnt % 30 == 0:
+                left_wheel_velocity = 0* int(random()*50)
+                right_wheel_velocity = 0* int(random()*50)
                 self.drive_adj(left_wheel_velocity, right_wheel_velocity)
 
-            if cnt % 100==0:
-                print(f'x : {self.x}, y: {self.y}, q: {self.q}')
+            if self.wall_detection():
+                self.turn_around_center(speed = 50)
+                wall_detection = True
 
-                #self.align_robot()
-                #print('i am aligned')
-                #print('i see wall')
-                #if CAMERA:
-                #    side = self.robot_vision.get_side(self.picture)
-                #    print(f'side is {side}')
-                #    self.q = side * math.pi/2
-                pass
+            elif wall_detected:
+                left_wheel_velocity = 0*int(random()*50)
+                right_wheel_velocity = 0* int(random()*50)
+                self.drive_adj(left_wheel_velocity, right_wheel_velocity)
+                wall_detection = False
+
+            if cnt % 20 == 0:
+                print('correcting position')
+                print(f'x : {self.x}, y: {self.y}, q: {self.q}')
+                self.update_location()
+                print(self.scan_data)
+                print(f'x : {self.x}, y: {self.y}, q: {self.q}')
 
             sleep(self.loop_time)
 

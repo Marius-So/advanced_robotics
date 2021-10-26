@@ -26,7 +26,7 @@ def get_global_coords(sensor_data, wall):
         y.append(e[1])
 
     rect = cv2.minAreaRect(points)
-    if rect[-2][0] < rect[-2][1]:
+    if rect[-2][0] > rect[-2][1]:
         switch_coords = False
         add_rot = 0
         if wall in (1,2):
@@ -37,6 +37,7 @@ def get_global_coords(sensor_data, wall):
             #
             # we need to rotate the whole thing by 180 degr
     else:
+        # this case
         switch_coords = True
         if wall in (2,3):
             # need to change x and y!
@@ -48,31 +49,18 @@ def get_global_coords(sensor_data, wall):
         # either rot by 90 or - 90
     box = cv2.boxPoints(rect)
     box = np.int0(box)
-    print(box)
 
     x_mean = 0
     y_mean = 0
-    rotation = - math.radians(rect[-1]) #+ add_rot
-    print(add_rot)
-    print(rect)
-    print(math.radians(rect[-1]))
+    rotation = - math.radians(rect[-1]) + add_rot
+
     for x,y in box:
-        plt.scatter(x,y,color="red")
         xr,yr = rotate_point(x,y, rotation)
-        plt.scatter(xr,yr,color="black")
         x_mean += xr/4
         y_mean += yr/4
 
-    plt.scatter(0,0,color="red")
-    plt.show()
-    print('rotation')
-    print(rotation)
-
     # neg because they are offsets
-    if switch_coords:
-        return -y_mean, -x_mean, (rotation + math.pi) % (2*math.pi)
-    else:
-        return -x_mean, -y_mean, (rotation + math.pi) % (2*math.pi)
+    return -x_mean/1000, -y_mean/1000, (rotation + math.pi) % (2*math.pi)
 
 def polar_to_cartesian(r, theta):
    xx = r * math.cos(theta)
