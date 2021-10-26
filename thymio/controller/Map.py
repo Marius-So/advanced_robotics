@@ -40,7 +40,8 @@ class Map:
     def setCorpse(self, p):
         corpse = self.getCoordinates(p)
         self.map[corpse[0]][corpse[1]] = "C"
-    def setCorpse(self, p):
+
+    def setHouse(self, p):
         house = self.getCoordinates(p)
         self.map[house[0]][house[1]] = "H"
 

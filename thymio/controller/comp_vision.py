@@ -118,9 +118,11 @@ class robot_vision:
         picture = cv2.cvtColor(picture, cv2.COLOR_BGR2GRAY)
         self.update_vision(picture)
         self.scan_vision()
-        #self.side[self.get_center_tag()]
-        # TODO: catch error when he can not see
-        return self.side[self.get_center_tag()]
+        center_tag = self.get_center_tag()
+        if center_tag is not None:
+            return self.side[center_tag]
+        else:
+            return None
 
 
     def estimate_rotation(self, picture):

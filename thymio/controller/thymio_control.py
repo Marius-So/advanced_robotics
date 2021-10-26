@@ -17,8 +17,9 @@ from picamera import PiCamera # camera control
 from threading import Thread
 from comp_vision import robot_vision
 from kinematic_simulator import kinematic_simulator
-from Location import Location
+import Location_2 as loc
 from ThymioController import ThymioController
+from Map import map
 
 
 
@@ -74,13 +75,14 @@ class Thymio:
         H = 1.0  # height of arena
         self.walls = [[-W/2, W/2, -H/2, -H/2], [-W/2, W/2, H/2, H/2], [W/2, W/2, -H/2, H/2], [-W/2, -W/2, H/2, -H/2]]
         self.simulator = kinematic_simulator(self.walls)
+        self.map = map(W,H)
 
         self.left_wheel_velocity =  0   # robot left wheel velocity in angle/s
         self.right_wheel_velocity =  0  # robot right wheel velocity in angle/s
 
         self.loop_time = 0.1 # this maybe needs to fixed at some point seconds
         self.time_measure = time()
-        self.loc = Location(H,W)#,(0,0))
+        #self.loc = Location(H,W)#,(0,0))
 
     def turn_off(self):
             if CAMERA:
@@ -191,6 +193,12 @@ class Thymio:
                 minima.append(idx % size)
         return minima
 
+    def update_location(self):
+        if CAMERA and LIDAR:
+            side = self.robot_vision.get_side(self.picture)
+            if side is not None:
+                self.x, self.y, self.q = loc.get_global_coords(self.scan_data, side)
+
 # ---------- actual robot behaviours ------------
     def align_robot(self):
         # robot behavior to align it within the rectangle
@@ -294,14 +302,6 @@ def main():
             lidar_thread = Thread(target=robot.lidar_sensing)
             lidar_thread.daemon = True
             lidar_thread.start()
-
-        #thymio_thread = Thread(target=robot.distance_sensing)
-        #thymio_thread.daemon = True
-        #thymio_thread.start()
-#
-        #thymio_thread_vertical = Thread(target=robot.ground_sensing)
-        #thymio_thread_vertical.daemon = True
-        #thymio_thread_vertical.start()
 
         if CAMERA:
             print('camera is on')
