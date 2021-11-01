@@ -2,6 +2,7 @@ from adafruit_rplidar import RPLidar, RPLidarException
 from math import floor
 from threading import Thread
 from picamera import PiCamera
+import apriltag
 from time import sleep
 import numpy as np
 import sys
@@ -31,6 +32,13 @@ class io_robot(object):
         self.camera.resolution = (320, 240)
         self.camera.framerate = 24
         self.picture = np.empty((240, 320, 3), dtype=np.uint8)
+        self.detector = apriltag.Detector()
+        self.det_result = []
+        camera_thread = Thread(target=self.camera_sensing)
+        camera_thread_daemon = True
+        camera_thread.start()
+        self.sees_buddy = 0
+
 
         #camera
 
@@ -66,6 +74,15 @@ class io_robot(object):
             except RPLidarException:
                 self.lidar.stop()
                 self.lidar = RPLidar(None, '/dev/ttyUSB0')
+
+    def camera_sensing(self):
+        while True:
+            self.camera.capture(self.picture , 'bgr')
+            self.det_result = self.detector.detect(self.picture)
+            if self.det_result:
+                self.sees_buddy = (self.det_result[-1].tag_id == 19)
+            sleep(0.1)
+
 
     def set_speed(self, l_speed, r_speed):
         self.asebaNetwork.SetVariable('thymio-II', 'motor.left.target', [l_speed])
