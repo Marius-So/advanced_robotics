@@ -231,14 +231,21 @@ class Thymio:
 # maybe this is possible to check all the time with a slave process but idk
     def wall_detection(self):
         # 1st order collision avoidance by LIDAR -> must be bigger than 0!
-        if LIDAR and 0 < min(self.scan_data[150:210]) < 150:
-            return True
+        if LIDAR:
+            l_det = min(self.scan_data[140:180])
+            r_det = min(self.scan_data[180:220])
+
+            if 0 < l_det < 300:
+                return -1
+
+            if 0 < r_det < 300:
+                return 1
 
         else:
             for i in [0,2,4]:
                 if self.prox_horizontal[i] > 500:
                     return True
-        return False
+        return 0
 
 #------------------- loop ------------------------
     def simulation_step(self, simulation_time):
@@ -268,8 +275,9 @@ class Thymio:
                 right_wheel_velocity = 0* int(random()*50)
                 self.drive_adj(left_wheel_velocity, right_wheel_velocity)
 
-            if self.wall_detection():
-                self.turn_around_center(speed = 50)
+            det = self.wall_detection()
+            if det:
+                self.turn_around_center(speed = det * 150)
                 wall_detection = True
 
             elif wall_detected:
