@@ -3,42 +3,50 @@ import dbus
 import dbus.mainloop.glib
 from plotter import lidar_ploter
 from time import sleep, time
-from Map import Map
+from pathfinding import pathfinder
+import matplotlib.pyplot as plt
+from comp_vision import robot_vision
 
 #constantes
 W = 1.92
 H = 1.13
-speed = 350
+speed = 500
 thymio = io_robot()
 
+def clean_map(m):
+    while [] in m:
+        m.remove([])
+    while None in m:
+        m.remove(None)
 
-def average_len(l_l):
-    ret = 0
-    for l in l_l:
-        ret += len(l)
-    return ret / len(l_l)
+    size = 0
+    for l in m:
+        if size < len(l):
+            size = len(l)
 
-def generate_map(first_map):
-    while [] in first_map:
-        first_map.remove([])
-    while None in first_map:
-        first_map.remove(None)
-    a = average_len(first_map)
-    if a > len(first_map): #sous liste plus grande que liste donc parcour en longueur 
-        ret = Map(H, W, W/a)
-        for i in range(len(first_map)):
-            for j in range(len(first_map[i])):
-                if first_map[i][j] == True:
-                    ret.setDanger([W * j / len(first_map[i]) - W/2, H * i / len(first_map) - H/2])
-    else:
-        ret = Map(H, W, H/a)
-        for i in range(len(first_map)):
-            for j in range(len(first_map[i])):
-                if first_map[i][j] == True:
-                    ret.setDanger([W * i / len(first_map) - W/2, H * j / len(first_map[i]) - H/2])
-    return ret
+    to_return = []
+    for l in m:
+        b = [2] * size
+        for i in range(len(l)):
+            b[int((size)*i/len(l))] = l[i]
+        for i in range(size):
+            if b[i] != 2:
+                p = i
+            if b[i] == 2:
+                n = i
+                while b[n] == 2 and n < size - 1:
+                    n += 1
+                if b[n] == 0 and b[p] == 0:
+                    for j in range(p + 1 ,n):
+                        b[j] = 0
+                else:
+                    for j in range(p + 1, n):
+                        b[j] = 1
+            b[-1] = b[-2]
+        to_return.append(b)
+    return to_return
 
-def turn(direction = "right", speed = 40, error = 40):
+def turn(direction = "right", speed = 50, error = 40):
     d = thymio.lidar_output[0] + thymio.lidar_output[180]
     if abs(d - 1900) < abs(d - 1110):
         newx = 1900
@@ -52,7 +60,16 @@ def turn(direction = "right", speed = 40, error = 40):
         thymio.set_speed(-speed, speed)
     while True:
         if abs(newx - thymio.lidar_output[90] - thymio.lidar_output[270]) < error and abs(newy - thymio.lidar_output[0] - thymio.lidar_output[180]) < error:
-            break
+            thymio.set_speed(0,0)
+            return
+
+def correct(direction = "right", speed = 55, error = 50):
+    if direction == "right":
+        thymio.set_speed(speed, -speed)
+    else:
+        thymio.set_speed(-speed, speed)
+    while abs(thymio.lidar_output[0] + thymio.lidar_output[180] - 1900) < error and abs(thymio.lidar_output[0] + thymio.lidar_output[180] - 1110) < error:
+        continue
     thymio.set_speed(0,0)
 
 def rotate(angle, speed = 80):
@@ -62,21 +79,15 @@ def rotate(angle, speed = 80):
         sleep(rot_time)
         thymio.set_speed(0,0)
     else:
-        angle -= 180
+        angle = 360 - angle
         rot_time = angle / (speed * 0.4)
         thymio.set_speed(-speed,speed)
         sleep(rot_time)
         thymio.set_speed(0,0)
 
-def average(l, n):
-    somme = 0
-    for i in range(n):
-        somme += l[i]
-    return somme/n
-
 def go_to_corner():
     #align
-    while len(thymio.lidar_output) < 300:
+    while 180 not in thymio.lidar_output or 0 not in thymio.lidar_output or 90 not in thymio.lidar_output or 270 not in thymio.lidar_output:
         continue
     to_rotate = min(thymio.lidar_output, key=thymio.lidar_output.get)
     to_rotate = (to_rotate + 180) % 360
@@ -97,23 +108,35 @@ def moove_straight():
     if d == -1:
         d = thymio.lidar_output[270]
         angle = 270
-    stop = thymio.get_thymio_sensor()[2]
+    #stop = thymio.get_thymio_sensor()[2]
     line = []
-    while stop == 0 or stop > 2900:
+    last_error = ""
+    a = time()
+    while thymio.lidar_output[180] > 200 and thymio.lidar_output[179] > 200:#stop == 0 or stop > 2900:
         ground = thymio.get_ground_sensor()
-        if ground[0] < 300 or ground[1] < 300:
-            line.append(True)
-        else:
-            line.append(False)
+        if time() - a > 0.5:
+            a = time()
+            if ground[0] < 300 or ground[1] < 300:
+                line.append(1)
+            else:
+                line.append(0)
         test = thymio.lidar_output[angle]
         if abs(test - d) < 5:
-            thymio.set_speed(speed, speed)
+            if last_error == "":
+                thymio.set_speed(speed, speed)
+            elif last_error == "right":
+                correct("left")
+                last_error = ""
+            else:
+                correct("right")
+                last_error = ""
         elif test > d:
-            
             thymio.set_speed(0.9 * speed, speed)
+            last_error = "right"
         else:
             thymio.set_speed(speed, 0.9 * speed)
-        stop = thymio.get_thymio_sensor()[2]
+            last_error = "left"
+        #stop = thymio.get_thymio_sensor()[2]
     thymio.set_speed(0,0)
     return line
 
@@ -123,31 +146,46 @@ def map():
         lines.append(moove_straight())
         turn()
         thymio.set_speed(speed,speed)
-        if thymio.get_thymio_sensor()[2] != 0:
+        if thymio.lidar_output[180] < 200:
             return lines
-        sleep(1)
+        sleep(0.9)
         thymio.set_speed(0,0)
-        if thymio.get_thymio_sensor()[2] != 0:
+        if thymio.lidar_output[180] < 200:
             return lines
         turn()
         lines.append(moove_straight().reverse())
         turn("left")
-        if thymio.get_thymio_sensor()[2] != 0:
+        if thymio.lidar_output[180] < 200:
             return lines
         thymio.set_speed(speed,speed)
-        sleep(1)
+        sleep(0.9)
         thymio.set_speed(0,0)
-        if thymio.get_thymio_sensor()[2] != 0:
+        if thymio.lidar_output[180] < 200:
             return lines
         turn("left")
-    
+    return lines
 
 if __name__ == "__main__":
     try:
+        #thymio.play_sound(1)
         go_to_corner()
         m = map()
-        nico_map = generate_map(m)
-        print(nico_map)
+        m = clean_map(m)
+        d = thymio.lidar_output[0] + thymio.lidar_output[180]
+        if abs(d - 1900) < abs(d - 1110):#y sous liste
+            resx = W/len(m)
+            resy = H/len(m[0])
+            m = pathfinder(m, len(m[0]) - 1, len(m) - 1, 0, 0) 
+        else: #x sous liste
+            resx = W/len(m[0])
+            resy = H/len(m)
+            m = pathfinder(m,  len(m) - 1, len(m[0]) - 1, 0, 0)
+        m.solve()
+        l = m.get_list_of_indices(m.xtarget, m.ytarget)
+        print(m.get_list_of_moove(l))
+        print(m)
+
+        print(m)
     except KeyboardInterrupt:
         print("keyboard interupt detected")
         print("shuting down")

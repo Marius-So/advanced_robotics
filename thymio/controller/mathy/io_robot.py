@@ -1,6 +1,9 @@
 from adafruit_rplidar import RPLidar, RPLidarException
 from math import floor
 from threading import Thread
+from picamera import PiCamera
+from time import sleep
+import numpy as np
 import sys
 import os
 import dbus
@@ -21,6 +24,13 @@ class io_robot(object):
         lidar_thread = Thread(target=self.lidar_sensing)
         lidar_thread_daemon = True
         lidar_thread.start()
+        #camear
+        self.camera = PiCamera()
+        self.camera.start_preview()
+        sleep(0.1)
+        self.camera.resolution = (320, 240)
+        self.camera.framerate = 24
+        self.picture = np.empty((240, 320, 3), dtype=np.uint8)
 
         #camera
 
@@ -30,6 +40,8 @@ class io_robot(object):
         #lidar
         self.lidar.stop()
         #camera
+        self.camera.stop_preview()
+        self.camera.close()
 
     def dbusReply(self):
         pass
@@ -42,6 +54,8 @@ class io_robot(object):
 
     def get_ground_sensor(self):
         return self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.reflected')
+    def play_sound(self, num):
+        self.asebaNetwork.SendEventName("sound.system", [num])
 
     def lidar_sensing(self):
         while True:
