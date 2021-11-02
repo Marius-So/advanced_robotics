@@ -1,1 +1,0 @@
-scp test.txt pi@192.168.4.1:test.txt

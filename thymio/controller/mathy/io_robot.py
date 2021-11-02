@@ -62,6 +62,7 @@ class io_robot(object):
 
     def get_ground_sensor(self):
         return self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.reflected')
+
     def play_sound(self, num):
         self.asebaNetwork.SendEventName("sound.system", [num])
 
