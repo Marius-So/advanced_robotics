@@ -149,8 +149,8 @@ class kinematic_simulator:
 		for cnt in range(int(sec / self.simulation_timestep)):
 			x, y, q = self.step(x,y,q,r_w_v, l_w_v)
 			coo.append([x,y,q])
-			if self.collision(x,y,q):
-				return coo
+			#if self.collision(x,y,q):
+			#	return coo
 		return coo
 
 if __name__ == "__main__":
