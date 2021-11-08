@@ -6,7 +6,7 @@ from kinematic_simulator import kinematic_simulator
 # https://towardsdatascience.com/simple-reinforcement-learning-q-learning-fcddc4b6fe56
 
 actions = ['left', 'right', 'straight', 'stop']  # constant speed
-states = ['sLeft', 'sRight', 'sStraight, sNothins']  # state of the sensors
+states = ['sLeft', 'sRight', 'sStraight', 'sNothins']  # state of the sensors
 rewards = [[0, 1, 0.6, 0.3],
            [1, 0, 0.6, 0.3],
            [0.6, 0.6, 0, 0.3],
@@ -17,7 +17,7 @@ Q = np.zeros((len(states), len(actions)))
 speed = 2
 time = 1
 redu = 0.5
-iterations = 100
+iterations = 1000
 h = 1
 w = 1
 walls = [[-w/2, -w/2, -h/2, h/2], [w/2, w/2, -h/2, h/2],
@@ -58,15 +58,14 @@ def getState():
         return 3
 
 def getBestAction(state):
-    print(state)
-    print(Q)
+    #print(Q)
     best = 0
     bestindex = 0
     for i in range(len(Q[state])):
         if Q[state][i]>best:
             best = Q[state][i]
             bestindex = i
-    return i
+    return bestindex
 
 def QLearning():
     # Initialize q-table values to 0
@@ -79,7 +78,7 @@ def QLearning():
     for i in range(iterations):
         if random.uniform(0, 1) < epsilon:
             # Explore: select a random action
-            a = random.randint(0, len(actions))
+            a = random.randint(0, len(actions) - 1)
         else:
             # Exploit: select the action with max value (future reward)
             a = getBestAction(s)
