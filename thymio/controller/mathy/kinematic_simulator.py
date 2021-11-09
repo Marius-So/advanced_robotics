@@ -18,7 +18,7 @@ class kinematic_simulator:
 		self.simulation_timestep = simulation_timestep  # timestep in kinematics sim (probably don't touch..)
 
 		self.robot_shape = [[-self.l/2, self.l/2, -self.w/2, -self.w/2], [-self.l/2, self.l/2, self.w/2, self.w/2], [self.l/2, self.l/2, -self.w/2, self.w/2], [-self.l/2, -self.l/2, self.w/2, -self.w/2]]
-		self.sensor_shape = [[self.l/2, self.l/2 + 0.16, -0.04, -0.04], [self.l/2, self.l/2 + 0.16, -0.02, -0.02], [self.l/2, self.l/2 + 0.16, 0, 0], [self.l/2, self.l/2 + 0.16, 0.02, 0.02], [self.l/2, self.l/2 + 0.16, 0.04, 0.04], [-self.l/2, -self.l/2 - 0.16, -0.03, -0.03], [-self.l/2, -self.l/2 - 0.16, 0.03, 0.03]]
+		self.sensor_shape = [[self.l/2, self.l/2 + 0.16, -0.04, -0.05], [self.l/2, self.l/2 + 0.16, -0.02, -0.02], [self.l/2, self.l/2 + 0.16, 0, 0], [self.l/2, self.l/2 + 0.16, 0.02, 0.02], [self.l/2, self.l/2 + 0.16, 0.04, 0.05], [-self.l/2, -self.l/2 - 0.16, -0.03, -0.03], [-self.l/2, -self.l/2 - 0.16, 0.03, 0.03]]
 
 		self.walls = walls
 		# Kinematic model
@@ -149,7 +149,9 @@ class kinematic_simulator:
 		for cnt in range(int(sec / self.simulation_timestep)):
 			x, y, q = self.step(x,y,q,r_w_v, l_w_v)
 			coo.append([x,y,q])
-			#if self.collision(x,y,q):
+			if self.collision(x,y,q):
+				x = 0
+				y = 0
 			#	return coo
 		return coo
 
