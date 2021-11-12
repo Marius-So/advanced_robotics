@@ -1,10 +1,11 @@
 import numpy as np
+from agent_evaluation import Rater
 # import evaluter ->
-ROWS = 3
-COLUMNS = 3
+ROWS = 4
+COLUMNS = 4
 
 class agent():
-    def __init__(self, size):
+    def __init__(self):
         size = ROWS*COLUMNS
         self.phenotype = np.random.random(size)
         self.fitness = 0
@@ -26,23 +27,28 @@ class Evolution():
         self.pheno_size = 0
         self.generation_size = 0
         self.population = []
-
+        self.evaluater = Rater()
         # self. max_fitness
 
     def init_population(self, generation_size, pheno_size):
         self.pheno_size = pheno_size
         self.generation_size = generation_size
-        self.population = [agent for i in range(self.generation_size)]
+        self.population = [agent() for i in range(self.generation_size)]
         print(self.population)
 
     def eval_generation(self):
-        for agent in self.population():
+        for agent in self.population:
             # evaluate agent
-            temp_fitness = evaluate(agent.get_genotype())
+            print(agent.get_genotype())
+            temp_fitness = self.evaluater.evaluate_agent(agent.get_genotype())
             agent.update_fitness(temp_fitness)
 
+    def gen_next_generation():
+        # do wee keep the fittest
+        # do we generate
+        pass
 
 
-a = agent(3)
-print(a)
-print(a.get_genotype())
+evo = Evolution()
+evo.init_population(10, 16)
+evo.eval_generation()

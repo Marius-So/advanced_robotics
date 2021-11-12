@@ -2,23 +2,25 @@ import numpy as np
 import random
 from kinematic_simulator import kinematic_simulator
 
-class rate:
+class Rater:
 	def __init__(self, s=1, time=0.1, iteration=500):
 		self.time = time
 		self.iteration = iteration
 		walls = [[-s/2, -s/2, -s/2, s/2], [s/2, s/2, -s/2, s/2], [-s/2, s/2, s/2, s/2], [-s/2, s/2, -s/2, -s/2]]
-		self.simulator = kinematic_simulator(walls, [[0,0,0]])
+		self.simulator = kinematic_simulator(walls)
+		self.speed = 10
+		self.coo = [[0,0,0]]
 
 
 	def activate(self, a):
 		if a == 0:
-			self.coo.extend(self.simulator.simulate(self.coo[-1][0], self.coo[-1][1], self.coo[-1][2], speed, -speed, time))
+			self.coo.extend(self.simulator.simulate(self.coo[-1][0], self.coo[-1][1], self.coo[-1][2], self.speed, -self.speed, self.time))
 		if a == 1:
-			self.coo.extend(self.simulator.simulate(self.coo[-1][0], self.coo[-1][1], self.coo[-1][2], -speed, speed, time))
+			self.coo.extend(self.simulator.simulate(self.coo[-1][0], self.coo[-1][1], self.coo[-1][2], -self.speed, self.speed, self.time))
 		if a == 2:
-			self.coo.extend(self.simulator.simulate(self.coo[-1][0], self.coo[-1][1], self.coo[-1][2], speed, speed, time))
+			self.coo.extend(self.simulator.simulate(self.coo[-1][0], self.coo[-1][1], self.coo[-1][2], self.speed, self.speed, self.time))
 		if a == 3:
-			self.coo.extend(self.simulator.simulate(self.coo[-1][0], self.coo[-1][1], self.coo[-1][2], -speed, -speed, time))
+			self.coo.extend(self.simulator.simulate(self.coo[-1][0], self.coo[-1][1], self.coo[-1][2], -self.speed, -self.speed, self.time))
 
 
 	def getState(self):
@@ -44,15 +46,15 @@ class rate:
 				bestindex = i
 		return bestindex
 
-	def Q_rate(self, Q):
+	def evaluate_agent(self, Q):
 		score = 0
-		for i in range(iterations):
-			s = getState()
-			a = getBestAction(s, Q)
+		for i in range(self.iteration):
+			s = self.getState()
+			a = self.getBestAction(s, Q)
 			if a == 2:
 				score += 1
 			elif a == 2:
 				score -= 1
-			activate(a)
+			self.activate(a)
 		return score - self.simulator.n_collision * 20
 
