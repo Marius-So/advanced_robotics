@@ -14,6 +14,7 @@ class kinematic_simulator:
 		self.w = 0.112 # x of the robot
 		self.l = 0.11 # y of the robot
 		self.h = 0.053 # z of the robot
+		self.n_collision = 0
 
 		self.simulation_timestep = simulation_timestep  # timestep in kinematics sim (probably don't touch..)
 
@@ -157,6 +158,7 @@ class kinematic_simulator:
 				x = 0
 				y = 0
 				q = 0
+				self.n_collision += 1
 		return coo
 
 if __name__ == "__main__":
