@@ -3,8 +3,7 @@ import random
 from kinematic_simulator import kinematic_simulator
 
 class rate:
-	def __init__(self, Q, s=1, time=0.1, iteration=200):
-		self.Q = Q
+	def __init__(self, s=1, time=0.1, iteration=500):
 		self.time = time
 		self.iteration = iteration
 		walls = [[-s/2, -s/2, -s/2, s/2], [s/2, s/2, -s/2, s/2], [-s/2, s/2, s/2, s/2], [-s/2, s/2, -s/2, -s/2]]
@@ -36,21 +35,20 @@ class rate:
 		else:
 			return 3
 
-	def getBestAction(self, state):
-    	#print(Q)
+	def getBestAction(self, state, Q):
 		best = 0
 		bestindex = 0
-		for i in range(len(self.Q[state])):
-			if self.Q[state][i]>best:
-				best = self.Q[state][i]
+		for i in range(len(Q[state])):
+			if Q[state][i]>best:
+				best = Q[state][i]
 				bestindex = i
 		return bestindex
 
-	def Q_rate(self):
+	def Q_rate(self, Q):
 		score = 0
 		for i in range(iterations):
 			s = getState()
-			a = getBestAction(s)
+			a = getBestAction(s, Q)
 			if a == 2:
 				score += 1
 			elif a == 2:
