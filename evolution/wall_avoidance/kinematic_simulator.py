@@ -18,7 +18,7 @@ class kinematic_simulator:
 		self.simulation_timestep = simulation_timestep  # timestep in kinematics sim (probably don't touch..)
 
 		self.robot_shape = [[-self.l/2, self.l/2, -self.w/2, -self.w/2], [-self.l/2, self.l/2, self.w/2, self.w/2], [self.l/2, self.l/2, -self.w/2, self.w/2], [-self.l/2, -self.l/2, self.w/2, -self.w/2]]
-		self.sensor_shape = [[self.l/2, self.l/2 + 0.16, -0.04, -0.05], [self.l/2, self.l/2 + 0.16, -0.02, -0.02], [self.l/2, self.l/2 + 0.16, 0, 0], [self.l/2, self.l/2 + 0.16, 0.02, 0.02], [self.l/2, self.l/2 + 0.16, 0.04, 0.05], [-self.l/2, -self.l/2 - 0.16, -0.03, -0.03], [-self.l/2, -self.l/2 - 0.16, 0.03, 0.03]]
+		self.sensor_shape = [[self.l/2, self.l/2 + 0.16, 0.04, 0.06], [self.l/2, self.l/2 + 0.16, 0.02, 0.02], [self.l/2, self.l/2 + 0.16, 0, 0], [self.l/2, self.l/2 + 0.16, -0.02, -0.02], [self.l/2, self.l/2 + 0.16, -0.04, -0.06], [-self.l/2, -self.l/2 - 0.16, -0.03, -0.03], [-self.l/2, -self.l/2 - 0.16, 0.03, 0.03]]
 
 		self.walls = walls
 		# Kinematic model
@@ -98,7 +98,7 @@ class kinematic_simulator:
 	def thymio_sensor(self,x,y,q):
 		ret = []
 		for s in self.sensor_shape:
-			ss = [x + s[0] * cos(q) + s[2] * sin(q), x + s[1] * cos(q) + s[3] * sin(q), y + s[2] * cos(q) - s[0] * sin(q), y + s[3] * cos(q) - s[1] * sin(q)]
+			ss = [x + s[0] * cos(-q) + s[2] * sin(-q), x + s[1] * cos(-q) + s[3] * sin(-q), y + s[2] * cos(-q) - s[0] * sin(-q), y + s[3] * cos(-q) - s[1] * sin(-q)]
 			minv = 99999999
 			for w in self.walls:
 				v = self.how_far_seg2_from_seg1(ss,w)
@@ -130,6 +130,10 @@ class kinematic_simulator:
 			for j in range(3):
 				to_print_w += str(w[j]) + ','
 			to_print_w += str(w[3]) + '\n'
+		for w in self.sensor_shape:
+			for j in range(3):
+				to_print_w += str(w[j]) + ','
+			to_print_w += str(w[3]) + '\n'
 
 		to_print_c = ""
 		for i in coo:
@@ -152,7 +156,7 @@ class kinematic_simulator:
 			if self.collision(x,y,q):
 				x = 0
 				y = 0
-			#	return coo
+				q = 0
 		return coo
 
 if __name__ == "__main__":
@@ -160,8 +164,7 @@ if __name__ == "__main__":
 	w = 1
 	walls = [[-w/2, -w/2, -h/2, h/2], [w/2, w/2, -h/2,h/2],[-w/2,w/2,h/2,h/2],[-w/2,w/2,-h/2,-h/2]]
 	simulator = kinematic_simulator(walls)
-	sim = simulator.lidar_sensor(0.1,0.1,0)
-	#print(sim[0], sim[90], sim[180], sim[270])
-	#print(simulator.thymio_sensor(0.3, 0.3, 0))
-	coo = simulator.simulate(0, 0, 0, 10, 20, 5)
+	#sim = simulator.lidar_sensor(0.1,0.1,0)
+	print(simulator.thymio_sensor(0, -0.4, 3.1 + 1.5))
+	coo = simulator.simulate(0, -0.4, 3.1 + 1.5, 0, 0, 5)
 	simulator.save(coo)

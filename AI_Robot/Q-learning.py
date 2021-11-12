@@ -5,17 +5,17 @@ from kinematic_simulator import kinematic_simulator
 
 # https://towardsdatascience.com/simple-reinforcement-learning-q-learning-fcddc4b6fe56
 
-actions = ['left', 'right', 'straight', 'stop']  # constant speed
+actions = ['left', 'right', 'straight', 'back']  # constant speed
 states = ['sLeft', 'sRight', 'sStraight', 'sNothins']  # state of the sensors
 rewards = [[0, 1, 0.6, 0.3],
            [1, 0, 0.6, 0.3],
            [0.6, 0.6, 0, 0.3],
            [0.3, 0.3, 1, 0]]
 
-Q = np.zeros((len(states), len(actions)))
+Q = np.random.rand(len(states), len(actions)) * 0.001
 
 speed = 2
-time = 1
+time = 0.1
 redu = 0.5
 iterations = 1000
 h = 1
@@ -27,27 +27,26 @@ coo = [[0, 0, 0]]
 
 
 def activate(a):
-    if a == 0:
+    if a == 0: # left turn
         coo.extend(simulator.simulate(
             coo[-1][0], coo[-1][1], coo[-1][2], speed*redu, speed, time))
-    if a == 1:
+    if a == 1: # right turn
         coo.extend(simulator.simulate(
             coo[-1][0], coo[-1][1], coo[-1][2], speed, speed*redu, time))
-    if a == 2:
+    if a == 2: # forward
         coo.extend(simulator.simulate(
             coo[-1][0], coo[-1][1], coo[-1][2], speed, speed, time))
-    if a == 3:
+    if a == 3: # backward
         coo.extend(simulator.simulate(
-            coo[-1][0], coo[-1][1], coo[-1][2], 0, 0, time))
+            coo[-1][0], coo[-1][1], coo[-1][2], -speed, -speed, time))
 
 
 def getState():
-    # states = ['sLeft', 'sRight', 'sStraight, sNothins'
+    # states = ['sLeft', 'sRight', 'sStraight, sNothins']
     lecture = simulator.thymio_sensor(coo[-1][0], coo[-1][1], coo[-1][2])
     for i in range(0, 7):
         if lecture[i] == 99999999:
             lecture[i] = 0
-
     if lecture[0] > lecture[2] and lecture[2] > lecture[4]:
         return 0
     if lecture[0] < lecture[2] and lecture[2] < lecture[4]:
@@ -70,25 +69,27 @@ def getBestAction(state):
 def QLearning():
     # Initialize q-table values to 0
     # Set the percent you want to explore
-    epsilon = 0.2
+    epsilon = 1
+    reducer = 0.99
     lr = 0.5
     gamma = 0.85
     a = 2
     s = 3
     for i in range(iterations):
         if random.uniform(0, 1) < epsilon:
-            # Explore: select a random action
             a = random.randint(0, len(actions) - 1)
+            epsilon *= reducer
         else:
             # Exploit: select the action with max value (future reward)
             a = getBestAction(s)
-
         s = getState()
         activate(a)
         new_s = getState()
         Q[s, a] = Q[s, a] + lr * (rewards[s][a] + gamma * getBestAction(new_s) - Q[s, a])
+        print(Q)
     simulator.save(coo)
 
 
 if __name__ == "__main__":
-    QLearning()
+    pass
+    #QLearning()
