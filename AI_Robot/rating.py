@@ -10,7 +10,7 @@ class rate:
 		walls = [[-s/2, -s/2, -s/2, s/2], [s/2, s/2, -s/2, s/2], [-s/2, s/2, s/2, s/2], [-s/2, s/2, -s/2, -s/2]]
 		self.simulator = kinematic_simulator(walls, [[0,0,0]])
 
-	
+
 	def activate(self, a):
 		if a == 0:
 			self.coo.extend(self.simulator.simulate(self.coo[-1][0], self.coo[-1][1], self.coo[-1][2], speed, -speed, time))
@@ -57,4 +57,4 @@ class rate:
 				score -= 1
 			activate(a)
 		return score - self.simulator.n_collision * 20
-	
+
