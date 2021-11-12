@@ -6,9 +6,10 @@ import matplotlib.pyplot as plt
 
 # https://towardsdatascience.com/simple-reinforcement-learning-q-learning-fcddc4b6fe56
 
+# Todo: we need to make this generic...
 actions = ['left', 'right', 'straight', 'back']  # constant speed
 states = ['sLeft', 'sRight', 'sNothing', 'sStraight']  # state of the sensors
-rewards = [[0, 2, 0, 0], #sleft 
+rewards = [[0, 2, 0, 0], #sleft
            [2, 0, 0, 0], #sright
            [0, 0, 2, 0],
            [1, 1, 0, 0.4]]
