@@ -2,7 +2,7 @@ import numpy as np
 import random
 from kinematic_simulator import kinematic_simulator
 
-class Rater:
+class AgentEvaluator:
 	def __init__(self, s=1, time=0.1, iteration=500):
 		self.time = time
 		self.iteration = iteration
