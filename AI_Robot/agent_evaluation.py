@@ -53,7 +53,7 @@ class Rater:
 			a = self.getBestAction(s, Q)
 			if a == 2:
 				score += 1
-			elif a == 2:
+			elif a == 3:
 				score -= 1
 			self.activate(a)
 		return score - self.simulator.n_collision * 20
