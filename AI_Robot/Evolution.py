@@ -1,10 +1,11 @@
 import numpy as np
 from AgentEvaluator import AgentEvaluator
 import random
+from copy import deepcopy
 # import evaluter ->
 ROWS = 4
 COLUMNS = 4
-mut_prob = 0.1 # okay so max one per individial
+mut_prob = 0 # okay so max one per individial
 cross_prob = 0
 # elitism
 
@@ -12,15 +13,15 @@ class agent():
     def __init__(self, phenotype = None):
         self.size = ROWS*COLUMNS
         self.phenotype = np.random.random(self.size)
-        self.fitness = 0
+        self.fitness = -float('inf')
         if phenotype is not None:
             self.phenotype = phenotype
 
     def __repr__(self) -> str:
-        return str(self.phenotype) + " Fitness: " + str(self.fitness)
+        return str(np.round(self.phenotype,3)) + " Fitness: " + str(self.fitness) + '\n'
 
     def copy(self):
-        return agent(self.phenotype)
+        return agent(deepcopy(self.phenotype))
 
     def update_fitness(self, fitness):
         self.fitness = fitness
@@ -63,6 +64,7 @@ class Evolution():
             # evaluate agent and update fitness
             agent.update_fitness(self.evaluater.evaluate_agent(agent.get_genotype()))
         self.population.sort(key=lambda x: x.fitness, reverse=True)
+        #print(self.population)
 
     def gen_next_generation(self):
         # do wee keep the fittest
@@ -72,7 +74,7 @@ class Evolution():
         new_gen = [agent.copy() for agent in self.population[:self.generation_size//10]]
         #print('new_gen')
         #print(new_gen)
-        for i in range((self.generation_size//10), self.generation_size):
+        for i in range(self.generation_size - (self.generation_size//10)):
             if np.random.random() < mut_prob: # 0.3
                 self.population[i].mutate()
                 child = self.population[i]
@@ -84,12 +86,13 @@ class Evolution():
                 child = self.population[i]
 
             new_gen.append(child)
+
         self.population = new_gen
-        print(self.population[0])
 
     def train(self, generations):
         for i in range(generations):
-
+            print('here')
+            print(self.population[0])
             self.gen_next_generation()
             self.eval_generation()
             print(f'size = {len(self.population)}')
@@ -98,4 +101,7 @@ class Evolution():
 
 evo = Evolution()
 evo.init_population(10, 16)
-evo.train(10)
+for i in range(10):
+    evo.eval_generation()
+    print(evo.population)
+
