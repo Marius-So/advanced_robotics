@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import math
 from kinematic_simulator import kinematic_simulator
 
 class AgentEvaluator:
@@ -9,7 +10,7 @@ class AgentEvaluator:
 		walls = [[-s/2, -s/2, -s/2, s/2], [s/2, s/2, -s/2, s/2], [-s/2, s/2, s/2, s/2], [-s/2, s/2, -s/2, -s/2]]
 		self.simulator = kinematic_simulator(walls)
 		self.speed = 10
-		self.coo = [[0,0,0]]
+		self.coo = [[0,0,np.random.random()*math.pi]]
 
 
 	def activate(self, a):
@@ -48,6 +49,7 @@ class AgentEvaluator:
 
 	def evaluate_agent(self, Q):
 		score = 0
+		self.simulator.n_collision = 0
 		for i in range(self.iteration):
 			s = self.getState()
 			a = self.getBestAction(s, Q)
@@ -57,4 +59,15 @@ class AgentEvaluator:
 				score -= 1
 			self.activate(a)
 		return score - self.simulator.n_collision * 20
+
+	def plot_trajectory(self, Q):
+		self.coo = [[0,0,np.random.random()*math.pi]]
+		self.simulator.n_collision = 0
+		for i in range(self.iteration):
+			s = self.getState()
+			a = self.getBestAction(s, Q)
+			self.activate(a)
+		self.simulator.save(coo=self.coo)
+
+
 

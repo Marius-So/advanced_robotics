@@ -111,7 +111,6 @@ class kinematic_simulator:
 		return ret
 
 	def step(self, x, y, q, r_w_v, l_w_v):
-		self.simulation_timestep
 		v_x = cos(q)*(self.R*l_w_v/2 + self.R*r_w_v/2)
 		v_y = sin(q)*(self.R*l_w_v/2 + self.R*r_w_v/2)
 		omega = (self.R*r_w_v - self.R*l_w_v)/(2*self.L)

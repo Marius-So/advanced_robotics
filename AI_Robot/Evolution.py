@@ -5,8 +5,8 @@ from copy import deepcopy
 # import evaluter ->
 ROWS = 4
 COLUMNS = 4
-mut_prob = 0 # okay so max one per individial
-cross_prob = 0
+mut_prob = 0.3 # okay so max one per individial
+cross_prob = 0.3
 # elitism
 
 class agent():
@@ -51,6 +51,7 @@ class Evolution():
         self.generation_size = 0
         self.population = []
         self.evaluater = AgentEvaluator()
+        self.history = []
         # self. max_fitness
 
     def init_population(self, generation_size, pheno_size):
@@ -91,17 +92,16 @@ class Evolution():
 
     def train(self, generations):
         for i in range(generations):
-            print('here')
-            print(self.population[0])
+            print(i)
             self.gen_next_generation()
             self.eval_generation()
-            print(f'size = {len(self.population)}')
             print(f'best fitness =  {self.population[0].fitness}')
+            self.history.append(self.population[0].fitness)
 
 
 evo = Evolution()
-evo.init_population(10, 16)
-for i in range(10):
-    evo.eval_generation()
-    print(evo.population)
+evo.init_population(110, 16)
+evo.train(5)
 
+best_agent = evo.population[0]
+evo.evaluater.plot_trajectory(best_agent.get_genotype())
