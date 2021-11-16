@@ -4,8 +4,8 @@ import random
 # import evaluter ->
 ROWS = 4
 COLUMNS = 4
-mut_prob = 0.01 # okay so max one per individial
-cross_prob = 0.1
+mut_prob = 0.1 # okay so max one per individial
+cross_prob = 0
 # elitism
 
 class agent():
@@ -29,7 +29,7 @@ class agent():
         return np.reshape(self.phenotype, (ROWS, COLUMNS))
 
     def mutate(self):
-        idx = np.random.randint(0,self.size - 1)
+        idx = np.random.randint(0, self.size - 1)
         self.phenotype[idx] = np.random.random()
 
     def crossover(self, other):
@@ -39,7 +39,6 @@ class agent():
             child.phenotype[idx:] = other.phenotype[idx:]
         else:
             child.phenotype[:idx] = other.phenotype[:idx]
-
         return child
 
 
@@ -64,7 +63,6 @@ class Evolution():
             # evaluate agent and update fitness
             agent.update_fitness(self.evaluater.evaluate_agent(agent.get_genotype()))
         self.population.sort(key=lambda x: x.fitness, reverse=True)
-        print(self.population)
 
     def gen_next_generation(self):
         # do wee keep the fittest
@@ -72,9 +70,12 @@ class Evolution():
         # keep 10% percent fittest
         # mutate the remaining population from the best one
         new_gen = [agent.copy() for agent in self.population[:self.generation_size//10]]
+        #print('new_gen')
+        #print(new_gen)
         for i in range((self.generation_size//10), self.generation_size):
             if np.random.random() < mut_prob: # 0.3
-                child = self.population[i].mutate()
+                self.population[i].mutate()
+                child = self.population[i]
 
             elif np.random.random() < cross_prob: # 0.5
                 # crossover from the best ones or just at random
@@ -84,11 +85,14 @@ class Evolution():
 
             new_gen.append(child)
         self.population = new_gen
+        print(self.population[0])
 
     def train(self, generations):
         for i in range(generations):
+
             self.gen_next_generation()
             self.eval_generation()
+            print(f'size = {len(self.population)}')
             print(f'best fitness =  {self.population[0].fitness}')
 
 
