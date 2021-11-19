@@ -7,7 +7,7 @@ import sys
 import os
 
 
-class ThymioController(object):
+class Thymio(object):
     def __init__(self, filename='thympi.aesl'):
         # initialize asebamedulla in background and wait 0.3s to let
         # asebamedulla startup (!!bad habit to wait...)
@@ -91,11 +91,26 @@ class ThymioController(object):
         self.left_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.left.speed")
         self.right_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.right.speed")
         # print the readed sensor values
-        print(self.prox_horizontal)
+
         # increase the counter
         # reschedule mainLoop
         if self.run_on:
             self.run()
+
+    def set_colour(self):
+
+        self.asebaNetwork.SendEventName(
+            'leds.bottom.left',
+            [0,0,31],
+            reply_handler=self.dbusReply,
+            error_handler=self.dbusError
+        )
+        self.asebaNetwork.SendEventName(
+            'leds.bottom.right',
+            [0,0,31],
+            reply_handler=self.dbusReply,
+            error_handler=self.dbusError
+        )
 
 
 def main():
@@ -105,8 +120,10 @@ def main():
     #    return
 
     # create and run controller
-    thymioController = ThymioController()
+    thymioController = Thymio()
     thymioController.run()
+    thymioController.set_colour()
+    thymioController.set_speed(50,50)
 
 if __name__ == '__main__':
     main()

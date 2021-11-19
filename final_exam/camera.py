@@ -29,6 +29,8 @@ if __name__ == "__main__":
     a = camera()
     sleep(0.1)
     import matplotlib.pyplot as plt
+    from camera_analysis import test_color
     while True:
+        print(test_color(a.fliped,320,240))
         plt.imshow(a.fliped)
         plt.show()
