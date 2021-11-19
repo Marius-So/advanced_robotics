@@ -22,3 +22,16 @@ class lidar():
             except RPLidarException:
                 self.lidar.stop()
                 self.lidar = RPLidar(None, '/dev/ttyUSB0')
+
+    def __del__(self):
+        self.lidar.stop()
+
+"""
+------------------------------
+how to use:
+    from lidar import lidar
+    my_lidar_object = lidar()
+    print(my_lidar_object.lidar_output)
+    print(my_lidar_object.local_time)
+------------------------------
+"""
