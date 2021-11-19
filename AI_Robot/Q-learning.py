@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 # Todo: we need to make this generic...
 actions = ['left', 'right', 'straight', 'back']  # constant speed
-states = ['sLeft', 'sRight', 'sNothing', 'sStraight']  # state of the sensors
+states = ['sLeft', 'sRight', 'sLeftClose', 'sRightClose', 'sNothing', 'sStraight']  # state of the sensors
 rewards = [[0, 2, 0, 0], #sleft
            [2, 0, 0, 0], #sright
            [0, 0, 2, 0],

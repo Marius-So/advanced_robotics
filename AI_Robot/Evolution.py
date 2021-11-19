@@ -5,8 +5,8 @@ from copy import deepcopy
 # import evaluter ->
 ROWS = 4
 COLUMNS = 4
-mut_prob = 0.3 # okay so max one per individial
-cross_prob = 0.3
+mut_prob = 0.1 # okay so max one per individial
+cross_prob = 0.1
 # elitism
 
 class agent():
@@ -100,8 +100,12 @@ class Evolution():
 
 
 evo = Evolution()
-evo.init_population(110, 16)
-evo.train(5)
+evo.init_population(10, 16)
+evo.train(2)
 
 best_agent = evo.population[0]
 evo.evaluater.plot_trajectory(best_agent.get_genotype())
+
+for i in range(50):
+    print(best_agent.get_genotype())
+    print(evo.evaluater.evaluate_agent(best_agent.get_genotype()))
