@@ -91,7 +91,7 @@ class ThymioController(object):
         self.left_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.left.speed")
         self.right_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.right.speed")
         # print the readed sensor values
-
+        print(self.prox_horizontal)
         # increase the counter
         # reschedule mainLoop
         if self.run_on:
