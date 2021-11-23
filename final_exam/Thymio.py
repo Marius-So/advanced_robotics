@@ -56,9 +56,11 @@ class Thymio(object):
         self.run_on = True
 
         self.turn_off_leds()
+        #enables the prox.com communication
         self.asebaNetwork.SendEventName( "prox.comm.enable", [1])
         # TODO: check for error when using  -> prox.comm.
-        # self.asebaNetwork.SendEventName("prox.comm.tx",[0])
+        #enables the prox.comm rx value to zero
+        self.asebaNetwork.SendEventName("prox.comm.tx",[0])
 
     def __del__(self):
         self.set_speed(0,0)

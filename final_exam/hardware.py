@@ -11,6 +11,14 @@ class input_output(Thymio, camera, lidar):
         lidar.__init__(self)
         Thymio.__init__(self)
 
+def test_Comunications(io, msg):
+    #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
+    while True:
+        send = io.send_code(msg)
+        received = io.get_sensor_values()[4]
+        print("received: " + str(received))
+
+
 if __name__ == '__main__':
     from camera_analysis import mask
     import matplotlib.pyplot as plt
@@ -28,3 +36,5 @@ if __name__ == '__main__':
 
     plt.imshow(np.concatenate(y))
     plt.show()
+    #print(io.lidar_output)
+    #test_Comunications(io,1)
