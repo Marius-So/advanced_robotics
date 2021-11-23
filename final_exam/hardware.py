@@ -1,7 +1,9 @@
 from camera import camera
 from lidar import lidar
 from Thymio import Thymio
-from time import sleep
+from camera_analysis import analyse_for_colours
+import time
+import numpy as np
 
 class input_output(Thymio, camera, lidar):
     def __init__(self):
@@ -10,6 +12,19 @@ class input_output(Thymio, camera, lidar):
         Thymio.__init__(self)
 
 if __name__ == '__main__':
+    from camera_analysis import mask
+    import matplotlib.pyplot as plt
+    from time import sleep
+
     io = input_output()
     sleep(1)
-    print(io.lidar_output)
+    picture = io.take_picture()
+    start = time.time()
+    mask(picture)
+    print(time.time()- start)
+    start = time.time()
+    y = analyse_for_colours(picture)
+    print(time.time()- start)
+
+    plt.imshow(np.concatenate(y))
+    plt.show()
