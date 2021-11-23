@@ -61,12 +61,10 @@ class Thymio(object):
         # self.asebaNetwork.SendEventName("prox.comm.tx",[0])
 
     def __del__(self):
-        self.stop()
         self.set_speed(0,0)
         self.set_colour('off')
         os.system("pkill -n asebamedulla")
         sys.exit()
-
 
     def send_event(self, name, inp):
         self.asebaNetwork.SendEventName(
@@ -85,20 +83,10 @@ class Thymio(object):
         self.send_event('leds.temperature',[0,0])
 
     def set_speed(self, l_speed, r_speed):
-        self.asebaNetwork.SendEventName(
-            'motor.target',
-            [l_speed, r_speed],
-            reply_handler=self.dbusReply,
-            error_handler=self.dbusError
-        )
+        self.send_event('motor.target',[l_speed, r_speed])
 
     def play_tune(self):
         self.asebaNetwork.SendEventName("sound.play",[3])
-
-    def run(self):
-        # run event loop all 20ms
-        if self.run_on:
-            threading.Timer(0.02, self.mainLoop).start()
 
     def dbusReply(self):
         # dbus replys can be handled here.
@@ -110,37 +98,33 @@ class Thymio(object):
         # Currently only the error is logged. Maybe interrupt the mainloop here
         print('dbus error: %s' % str(e))
 
-    def mainLoop(self):
+    def get_sensor_values(self):
         # read and display acc sensors
         #self.acc = self.asebaNetwork.GetVariable('thymio-II', 'acc')
-        self.prox_horizontal = self.asebaNetwork.GetVariable('thymio-II', 'prox.horizontal')
-        self.ground_ambiant = self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.ambiant')
-        self.ground_reflected = self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.reflected')
-        self.ground_delta = self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.delta')
-        self.left_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.left.speed")
-        self.right_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.right.speed")
+        prox_horizontal = self.asebaNetwork.GetVariable('thymio-II', 'prox.horizontal')
+        ground_ambiant = self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.ambiant')
+        ground_reflected = self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.reflected')
+        ground_delta = self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.delta')
+        left_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.left.speed")
+        right_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.right.speed")
 
         # sending and receiving information
+        rx = self.asebaNetwork.GetVariable("thymio-II", "prox.comm.rx")
 
-        self.asebaNetwork.SendEventName("prox.comm.tx", [0])
-        self.rx = self.asebaNetwork.GetVariable("thymio-II", "prox.comm.rx")
-        # reschedule mainLoop
-        if self.run_on:
-            self.run()
+        return prox_horizontal, ground_reflected, left_speed, right_speed, rx
+
+    def send_code(self, code):
+        self.asebaNetwork.SendEventName("prox.comm.tx", [code])
 
     def set_colour(self, colour):
         self.send_event('leds.bottom.left',thymio_colour[colour])
         self.send_event('leds.bottom.right',thymio_colour[colour])
         self.send_event('leds.top',thymio_colour[colour])
 
-    def stop(self):
-        self.run_on = False
-
 def main():
     # check command-line arguments
     # create and run controller
     thymioController = Thymio()
-    thymioController.run()
     thymioController.set_colour('purple')
     thymioController.set_speed(0,0)
     for colour in ['red','orange','blue','green','purple']:
