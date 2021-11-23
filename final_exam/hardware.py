@@ -54,9 +54,9 @@ if __name__ == "__main__":
     a = input_output()
     sleep(0.1)
     import matplotlib.pyplot as plt
-    from camera_analysis import test_color
+    from camera_analysis import analyse_for_colours
     while True:
         a.fliped = np.flip(a.picture, 0)
-        test_color(a.fliped,320,240)
+        red_mask, blue_mask, green_mask, yellow_mask = analyse_for_colours(a.fliped)
         plt.imshow(a.fliped)
         plt.show()
