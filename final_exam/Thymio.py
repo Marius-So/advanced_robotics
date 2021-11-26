@@ -125,6 +125,7 @@ class Thymio(object):
     
     def test_Comunications(self, msg):
     #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
+        print("YEA")
         while True:
             send = self.send_code(msg)
             received = self.get_sensor_values()[4]
@@ -142,8 +143,6 @@ def main():
         print(colour)
         thymioController.set_colour(colour)
         thymioController.set_speed(0,0)
-
-
 
 if __name__ == '__main__':
     #main()
