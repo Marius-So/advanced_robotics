@@ -58,7 +58,8 @@ class kinematic_simulator:
 				maxy2 = max(seg2[2], seg2[3])
 				if y > miny2 and y < maxy2:
 					return seg2[0], y
-
+		elif dx2 != 0:
+			coef2 = dy2/ dx2
 			offset2 = seg2[2] - coef2 * seg2[0]
 			minx2 = min(seg2[0], seg2[1])
 			maxx2 = max(seg2[0], seg2[1])
@@ -71,9 +72,9 @@ class kinematic_simulator:
 		return None
 
 	def collision(self,i):
-		x = self.robots[i][0]
-		y = self.robots[i][1]
-		q = self.robots[i][2]
+		x = self.robots[i][-1][0]
+		y = self.robots[i][-1][1]
+		q = self.robots[i][-1][2]
 		for s in self.robot_shape:
 			ss = [x + s[0] * cos(q) + s[2] * sin(q), x + s[1] * cos(q) + s[3] * sin(q), y + s[2] * cos(q) - s[0] * sin(q), y + s[3] * cos(q) - s[1] * sin(q)]
 			for w in self.walls:
@@ -82,9 +83,9 @@ class kinematic_simulator:
 					return True
 			for j in range(len(self.robots)):
 				if j != i:
-					xx = robot[j][0]
-					yy = robot[j][1]
-					qq = robot[j][2]
+					xx = robot[j][-1][0]
+					yy = robot[j][-1][1]
+					qq = robot[j][-1][2]
 					for s in self.robot_shape:
 						ss2 = [xx + s[0] * cos(qq) + s[2] * sin(qq), xx + s[1] * cos(qq) + s[3] * sin(qq), yy + s[2] * cos(qq) - s[0] * sin(qq), yy + s[3] * cos(qq) - s[1] * sin(qq)]
 						v = self.how_far_seg2_from_seg1(ss,ss2)
@@ -94,9 +95,9 @@ class kinematic_simulator:
 
 	def lidar_sensor(self, i):
 		ret = []
-		x = robot[i][0]
-		y = robot[i][1]
-		q = robot[i][2]
+		x = self.robots[i][-1][0]
+		y = self.robots[i][-1][1]
+		q = self.robots[i][-1][2]
 		for a in range(0,360):
 			angle = q + a / 57.2957795131
 			ss = [x, x + 15 * cos(angle), y, y + 15 * sin(angle)]
@@ -109,9 +110,9 @@ class kinematic_simulator:
 						minv = d
 			for j in range(len(self.robots)):
 				if j != i:
-					xx = robot[j][0]
-					yy = robot[j][1]
-					qq = robot[j][2]
+					xx = self.robots[j][-1][0]
+					yy = self.robots[j][-1][1]
+					qq = self.robots[j][-1][2]
 					for s in self.robot_shape:
 						ss2 = [xx + s[0] * cos(qq) + s[2] * sin(qq), xx + s[1] * cos(qq) + s[3] * sin(qq), yy + s[2] * cos(qq) - s[0] * sin(qq), yy + s[3] * cos(qq) - s[1] * sin(qq)]
 						v = self.how_far_seg2_from_seg1(ss,ss2)
@@ -196,9 +197,14 @@ class kinematic_simulator:
 				self.step(self.robots[i], instructions[i])
 
 if __name__ == "__main__":
+	import matplotlib.pyplot as plt
 	h = 1
 	w = 1
 	walls = [[-w/2, -w/2, -h/2, h/2], [w/2, w/2, -h/2,h/2],[-w/2,w/2,h/2,h/2],[-w/2,w/2,-h/2,-h/2]]
-	simulator = kinematic_simulator(walls, [[[0,0,0]], [[0,0,1]], [[0,0,2]], [[0,0,3]], [[0,0,4]], [[0,0,5]]])
-	simulator.simulate([[3, 3], [3, 3], [3,3], [3,3], [2,4], [3,3]], 5)
+	simulator = kinematic_simulator(walls, [[[-0.4,-0.4,0]], [[0.4,0,3.14]]])
+	a = simulator.lidar_sensor(0)
+	for i in range(len(a)):
+		plt.scatter(cos(i/57.3)*a[i],sin(i/57.3)*a[i])
+	plt.show()
+	simulator.simulate([[3, 3], [3, 3]], 5)
 	simulator.save()
