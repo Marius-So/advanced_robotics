@@ -1,7 +1,4 @@
-import matplotlib.pyplot as plt
-import cv2
-import numpy as np
-
+"""
 def diff(a,b):
     res = a - b
     if res < 0:
@@ -52,7 +49,6 @@ def mask(img, k_size = 8):
             ret.append("nothing")
     return ret
 
-a = """
 def get_centers(masks):
     ret = []
     for mask in masks:
@@ -78,10 +74,8 @@ def get_center(mask):
     return (None, None)
 """
 
-import matplotlib.pyplot as plt
 import cv2
 import numpy as np
-from copy import deepcopy
 
 def analyse_for_colours(image, k_size = 10):
     input_hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
@@ -145,6 +139,7 @@ def get_bin_detection(mask, bins = 8, tr= 0.01):
 
     return detection_bins
 
+"""
 def get_all_detections(masks, bins = 8, tr = 0.01):
     res = []
     for mask in masks:
@@ -160,10 +155,4 @@ def update_centers(self):
             self.centers[mask] = int(M["m10"] / M["m00"]).self.masks[mask].shape[0]
         else:
             self.centers[mask] = None
-
-
-
-
-
-
-
+"""
