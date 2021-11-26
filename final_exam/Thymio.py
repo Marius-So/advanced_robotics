@@ -122,7 +122,7 @@ class Thymio(object):
         self.send_event('leds.bottom.left',thymio_colour[colour])
         self.send_event('leds.bottom.right',thymio_colour[colour])
         self.send_event('leds.top',thymio_colour[colour])
-    
+
     def test_Comunications(self, msg):
     #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
         print("YEA2")
