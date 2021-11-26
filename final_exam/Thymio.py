@@ -127,10 +127,10 @@ class Thymio(object):
     #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
         print("YEA")
         while True:
-            send = self.send_code(msg)
+            self.send_code(msg)
             received = self.get_sensor_values()[4]
             print("received: " + str(received))
-            print("send: " + str(send))
+            print("send: " + str(msg))
 
 def main():
     # check command-line arguments
