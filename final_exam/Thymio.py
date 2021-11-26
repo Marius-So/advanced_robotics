@@ -122,6 +122,14 @@ class Thymio(object):
         self.send_event('leds.bottom.left',thymio_colour[colour])
         self.send_event('leds.bottom.right',thymio_colour[colour])
         self.send_event('leds.top',thymio_colour[colour])
+    
+    def test_Comunications(self, msg):
+    #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
+        while True:
+            send = self.send_code(msg)
+            received = self.get_sensor_values()[4]
+            print("received: " + str(received))
+            print("send: " + str(send))
 
 def main():
     # check command-line arguments
@@ -135,15 +143,9 @@ def main():
         thymioController.set_colour(colour)
         thymioController.set_speed(0,0)
 
-def test_Comunications(self, tm, msg):
-    #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
-    while True:
-        send = self.send_code(msg)
-        received = self.get_sensor_values()[4]
-        print("received: " + str(received))
-        print("send: " + str(send))
+
 
 if __name__ == '__main__':
     #main()
-    ty = Thymio()
-    test_Comunications(ty,19)
+    tm = Thymio()
+    tm.test_Comunications(19)
