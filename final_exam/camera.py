@@ -8,9 +8,9 @@ class camera():
         self.camera = PiCamera()
         self.camera.start_preview()
         sleep(0.1)
-        self.camera.resolution = (128, 96)
+        self.camera.resolution = (256, 128)
         self.camera.framerate = 24
-        self.picture = np.empty((96, 128, 3), dtype=np.uint8)
+        self.picture = np.empty((128, 256, 3), dtype=np.uint8)
 
     def take_picture(self):
         self.camera.capture(self.picture, 'rgb')
