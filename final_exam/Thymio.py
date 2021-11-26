@@ -10,10 +10,10 @@ import sys
 
 thymio_colour = {
     'red': [32,0,0],
-    'orange': [32,20,0],
+    'orange': [32,32,0],
     'blue': [0,0,32],
     'green': [0,32,0],
-    'purple': [16,0,16],
+    'purple': [32,0,32],
     'off': [0,0,0]
 }
 
