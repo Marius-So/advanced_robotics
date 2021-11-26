@@ -135,7 +135,7 @@ def main():
         thymioController.set_colour(colour)
         thymioController.set_speed(0,0)
 
-def test_Comunications(self, tm, msg):
+def test_Comunications(tm, msg):
     #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
     while True:
         send = self.send_code(msg)
