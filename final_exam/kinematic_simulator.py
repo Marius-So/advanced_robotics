@@ -200,11 +200,12 @@ if __name__ == "__main__":
 	import matplotlib.pyplot as plt
 	h = 1
 	w = 1
-	walls = [[-w/2, -w/2, -h/2, h/2], [w/2, w/2, -h/2,h/2],[-w/2,w/2,h/2,h/2],[-w/2,w/2,-h/2,-h/2]]
+	walls = []
 	simulator = kinematic_simulator(walls, [[[-0.4,-0.4,0]], [[0.4,0,3.14]]])
 	a = simulator.lidar_sensor(0)
 	for i in range(len(a)):
-		plt.scatter(cos(i/57.3)*a[i],sin(i/57.3)*a[i])
+            if a[i] != 999999999:
+                plt.scatter(cos(i/57.3)*a[i],sin(i/57.3)*a[i])
 	plt.show()
 	simulator.simulate([[3, 3], [3, 3]], 5)
 	simulator.save()
