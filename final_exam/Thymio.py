@@ -125,7 +125,7 @@ class Thymio(object):
     
     def test_Comunications(self, msg):
     #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
-        print("YEA")
+        print("YEA2")
         while True:
             received = 999
             self.send_code(msg)
