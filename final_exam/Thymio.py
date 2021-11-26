@@ -111,8 +111,8 @@ class Thymio(object):
         right_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.right.speed")
 
         # sending and receiving information
-        rx = self.asebaNetwork.GetVariable("thymio-II", "prox.comm.rx")
-
+        received = self.asebaNetwork.GetVariable("thymio-II", "prox.comm.rx")
+        rx = received[0]
         return prox_horizontal, ground_reflected, left_speed, right_speed, rx
 
     def send_code(self, code):
@@ -127,6 +127,7 @@ class Thymio(object):
     #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
         print("YEA")
         while True:
+            received = 999
             self.send_code(msg)
             received = self.get_sensor_values()[4]
             print("received: " + str(received))
