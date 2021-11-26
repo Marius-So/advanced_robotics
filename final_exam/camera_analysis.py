@@ -81,13 +81,14 @@ def get_center(mask):
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
+from copy import deepcopy
 
-def analyse_for_colours(image, k_size = 5):
-    input_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+def analyse_for_colours(image, k_size = 10):
+    input_hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     kernel = np.ones((k_size, k_size), np.uint8)
 
     # upper mask (170-180)
-    lower_red = np.array([155,100,50])
+    lower_red = np.array([160,100,100])
     upper_red = np.array([185,255,255])
     mask1 = cv2.inRange(input_hsv, lower_red, upper_red)
 
@@ -95,23 +96,23 @@ def analyse_for_colours(image, k_size = 5):
     red_mask = mask1#mask0+
     red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
 
-     # orange
-    lower_orange = np.array([80,50,50])
-    upper_orange = np.array([110,255,255])
-    orange_mask = cv2.inRange(input_hsv, lower_orange, upper_orange)
-    orange_mask = cv2.morphologyEx(orange_mask, cv2.MORPH_OPEN, kernel)
+     # yellow
+    lower_yellow = np.array([0,100,100])
+    upper_yellow = np.array([50,255,255])
+    yellow_mask = cv2.inRange(input_hsv, lower_yellow, upper_yellow)
+    yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_OPEN, kernel)
 
     # blue
     # define range of blue color in HSV
-    lower_blue = np.array([110,50,0])
-    upper_blue = np.array([130,255,255])
+    lower_blue = np.array([100,100,100])
+    upper_blue = np.array([140,255,255])
     # Threshold the HSV image to get only blue colors
     blue_mask = cv2.inRange(input_hsv, lower_blue, upper_blue)
     blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, kernel)
 
     # green
     lower_green =  np.array([50,50,50])
-    upper_green = np.array([70,255,255])
+    upper_green = np.array([100,255,255])
     green_mask = cv2.inRange(input_hsv, lower_green, upper_green)
     green_mask = cv2.morphologyEx(green_mask, cv2.MORPH_OPEN, kernel)
 
@@ -121,7 +122,36 @@ def analyse_for_colours(image, k_size = 5):
     purple_mask = cv2.inRange(input_hsv, lower_purple, upper_purple)
     purple_mask = cv2.morphologyEx(purple_mask, cv2.MORPH_OPEN, kernel)
 
-    return red_mask, orange_mask, blue_mask, green_mask, purple_mask
+    return red_mask, yellow_mask, blue_mask, green_mask, purple_mask
+
+def get_bin_detection(mask, bins = 8, tr= 0.01):
+    # more than 1% of bin is positive detection -> mark as detected
+    # we take as input a mask derived from the analysi before this could be set here
+    if np.max(mask) > 1:
+        ret, mask = cv2.threshold(mask,127,255,cv2.THRESH_BINARY)
+        mask = mask / 255
+    else:
+        ret, mask = cv2.threshold(mask,0.5, 1,cv2.THRESH_BINARY)
+
+    detection_bins = np.zeros(bins)
+    y,x = mask.shape
+
+    bin_width = x // bins
+    if x % bins != 0: bin_width += 1
+    for idx in range(bins):
+        percent = np.sum(mask.T[idx*bin_width:(idx+1)*bin_width]) / (y*bin_width)
+        if percent > tr:
+            detection_bins[idx] = np.sum(mask.T[idx*bin_width:(idx+1)*bin_width]) / (y*bin_width)
+
+    return detection_bins
+
+def get_all_detections(masks, bins = 8, tr = 0.01):
+    res = []
+    for mask in masks:
+        value =get_bin_detection(mask, bins, tr)
+        res.append(value)
+    return np.concatenate(res).reshape(-1,bins)
+
 
 def update_centers(self):
     for mask in self.masks:

@@ -2,7 +2,7 @@ import matplotlib . pyplot as plt # type: ignore
 import numpy as np
 import csv
 
-with open('dataSensorsThymio.csv', newline='') as f:
+with open('final_exam\\Experiments\\Sensors Thymio\\dataSensorsThymio.csv', newline='') as f:
     reader = csv.reader(f)
     data = list(reader)
 
@@ -32,4 +32,4 @@ ax. set_ylabel ('Value')
 #ax. set_yscale ('log')
 plt.xticks(rotation=45)
 #plt.show()
-plt.savefig('FigureThymioSensors.png',bbox_inches="tight")
+plt.savefig('final_exam\\Experiments\\Sensors Thymio\\FigureThymioSensors.png',bbox_inches="tight")

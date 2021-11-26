@@ -10,7 +10,7 @@ import sys
 
 thymio_colour = {
     'red': [32,0,0],
-    'orange': [32,15,0],
+    'orange': [32,32,0],
     'blue': [0,0,32],
     'green': [0,32,0],
     'purple': [32,0,32],
@@ -111,8 +111,8 @@ class Thymio(object):
         right_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.right.speed")
 
         # sending and receiving information
-        rx = self.asebaNetwork.GetVariable("thymio-II", "prox.comm.rx")
-
+        received = self.asebaNetwork.GetVariable("thymio-II", "prox.comm.rx")
+        rx = received[0]
         return prox_horizontal, ground_reflected, left_speed, right_speed, rx
 
     def send_code(self, code):
@@ -122,6 +122,16 @@ class Thymio(object):
         self.send_event('leds.bottom.left',thymio_colour[colour])
         self.send_event('leds.bottom.right',thymio_colour[colour])
         self.send_event('leds.top',thymio_colour[colour])
+
+    def test_Comunications(self, msg):
+    #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
+        print("YEA2")
+        while True:
+            received = 999
+            self.send_code(msg)
+            received = self.get_sensor_values()[4]
+            print("received: " + str(received))
+            print("send: " + str(msg))
 
 def main():
     # check command-line arguments
@@ -136,4 +146,6 @@ def main():
         thymioController.set_speed(0,0)
 
 if __name__ == '__main__':
-    main()
+    #main()
+    tm = Thymio()
+    tm.test_Comunications(19)
