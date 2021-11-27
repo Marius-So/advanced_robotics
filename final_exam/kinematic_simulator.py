@@ -124,11 +124,11 @@ class kinematic_simulator:
 		return ret
 
 	def camera(self, i, color, nbins):
-		ret = [0 for i in range nbins]
+		ret = [0 for i in range(nbins)]
 		x = self.robots[i][-1][0]
 		y = self.robots[i][-1][1]
 		q = self.robots[i][-1][2]
-		for a in range(0,60):
+		for a in range(60,0, -1):
 			angle = q + a / 57.2957795131 + 5.759586
 			ss = [x, x + 15 * cos(angle), y, y + 15 * sin(angle)]
 			minv = 999999999
@@ -141,8 +141,8 @@ class kinematic_simulator:
 						ss2 = [xx + s[0] * cos(qq) + s[2] * sin(qq), xx + s[1] * cos(qq) + s[3] * sin(qq), yy + s[2] * cos(qq) - s[0] * sin(qq), yy + s[3] * cos(qq) - s[1] * sin(qq)]
 						v = self.how_far_seg2_from_seg1(ss,ss2)
 						if v != None:
-							if color[j] = color:
-								ret[a*nbins//60] = 0.2
+							if self.colors[j] == color:
+								ret[a*(nbins-1)//60] = 0.2
 		return ret
 
 
@@ -224,11 +224,13 @@ if __name__ == "__main__":
 	h = 1
 	w = 1
 	walls = []
-	simulator = kinematic_simulator(walls, [[[-0.4,-0.4,0]], [[0.4,0,3.14]]], ["red", "blue"])
+	simulator = kinematic_simulator(walls, [[[-0.4,0,0]], [[0.4,0,3.14]]], ["red", "blue"])
 	a = simulator.lidar_sensor(0)
 	for i in range(len(a)):
             if a[i] != 999999999:
                 plt.scatter(cos(i/57.3)*a[i],sin(i/57.3)*a[i])
+	print(simulator.camera(0, "blue", 8))
+	print(simulator.camera(0, "red", 8))
 	plt.show()
 	simulator.simulate([[3, 3], [3, 3]], 5)
 	simulator.save()
