@@ -1,7 +1,7 @@
 from adafruit_rplidar import RPLidar, RPLidarException
 from time import time
 from threading import Thread
-from math import floor
+from math import floor, inf
 
 class lidar():
     def __init__(self):
@@ -13,6 +13,8 @@ class lidar():
         lidar_thread.start()
 
     def lidar_sensing(self):
+		for i in range(360):
+			self.lidar_output[i] = inf, time()
         while True:
             try:
                 for scan in self.lidar.iter_scans():

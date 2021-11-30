@@ -139,20 +139,9 @@ def get_bin_detection(mask, bins = 8, tr= 0.01):
 
     return detection_bins
 
-
 def get_all_detections(masks, bins = 8, tr = 0.01):
     res = []
     for mask in masks:
         value =get_bin_detection(mask, bins, tr)
         res.append(value)
     return np.concatenate(res).reshape(-1,bins)
-
-"""
-def update_centers(self):
-    for mask in self.masks:
-        M = cv2.moments(self.masks[mask])
-        if not round(M["m10"]):
-            self.centers[mask] = int(M["m10"] / M["m00"]).self.masks[mask].shape[0]
-        else:
-            self.centers[mask] = None
-"""
