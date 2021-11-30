@@ -218,6 +218,16 @@ class kinematic_simulator:
 		for cnt in range(int(sec / self.simulation_timestep)):
 			for i in range(len(instructions)):
 				self.step(self.robots[i], instructions[i])
+		
+		#change colors if catched
+		for i in range(len(self.robots)):
+			if self.colors[i] == "red":
+				for j in range(len(self.robots)):
+					if self.colors[j] == "blue":
+						if (self.robots[i][-1][0] - self.robots[j][-1][0])*(self.robots[i][-1][0] - self.robots[j][-1][0]) + (self.robots[i][-1][1] - self.robots[j][-1][1])*(self.robots[i][-1][1] - self.robots[j][-1][1]) < 0.05:
+							self.robots[j][-1][1] = -200
+							self.colors[j] = "orange"
+
 
 if __name__ == "__main__":
 	import matplotlib.pyplot as plt
