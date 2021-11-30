@@ -2,6 +2,8 @@ from os import name
 from hardware import input_output
 import numpy as np
 from time import sleep, time
+from camera_analysis import analyse_for_colours, get_all_detections
+from NN import NN
 
 class controller(input_output):
 	def __init__(self):
@@ -22,6 +24,7 @@ class controller(input_output):
 			self.transmission_code = 1
 		# then we create the feed forward network based on the genes
 		# TODO: create nn based on the genes
+		self.NN = NN(genes, input_neurons=100, hidden_neurons=10, output_neurons=2)
 
 	def mainloop(self):
 		# update sensor values
@@ -85,11 +88,13 @@ class controller(input_output):
 
 		# here comes the wheel input based on the genes
 		# TODO: for now we just send random wheel speeds
+		decision_input = self.build_input()
+
 		self.set_speed(np.random.random() * 50, np.random.random()*50)
 
 	def run(self):
 		count = 0
-		while self.active() and count< 2000:
+		while self.active() and count < 2000:
 			count+=1
 			print(count)
 			self.mainloop()
@@ -97,15 +102,20 @@ class controller(input_output):
 	def stop(self):
 		self.active = False
 
-
+	def get_camera_output(self):
+		picture = self.take_picture()
+		colour_masks = analyse_for_colours(picture)
+		return get_all_detections(colour_masks)
 
 	def build_input(self, lidar_output, camera_output, ds=10):
+		lidar_output = self.lidar_output
+		camera_output = self.get_camera_output()
 		output = []
 		for i in range(0, 360, ds):
 			for j in range(i, i + ds):
 				m = float('inf')
-				if time() - lidar_output[(j + 180)%360][2] < 1 and lidar_output[(j + 180)%360][1] < m:
-					m = lidar_output[(j + 180)%360][1]
+				if time() - lidar_output[(j + 180)%360][1] < 1 and lidar_output[(j + 180)%360][0] < m:
+					m = lidar_output[(j + 180)%360][0]
 			if m == float('inf'):
 				output.append(0)
 			else:
@@ -114,10 +124,6 @@ class controller(input_output):
 			for j in i:
 				output.append(j)
 		return output
-
-
-
-
 
 if __name__ == "__main__":
 	robot = controller()
