@@ -10,6 +10,7 @@ def test_camera_detection(robot):
         user_input = input()
         count += 1
         if user_input == 'E':
+            break
             return
         if user_input in ['red', 'orange', 'blue', 'green', 'purple']:
             robot.set_colour(user_input)
@@ -17,9 +18,9 @@ def test_camera_detection(robot):
             pic = robot.take_picture()
             im = Image.fromarray(pic)
             im.save(f"camera_test_{count}.jpg")
-	        masks = analyse_for_colours(pic)
-	        print(get_all_detections(masks, 12))
+            masks = analyse_for_colours(pic)
 
+            print(get_all_detections(masks, 12))
 
 if __name__ == '__main__':
     robot = input_output()

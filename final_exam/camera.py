@@ -29,8 +29,7 @@ if __name__ == "__main__":
     picture = a.take_picture()
     masks = analyse_for_colours(picture)
     mask = np.concatenate(masks, axis=1)
-    im = plt.imshow(mask)
-    plt.ion()
+    im = plt.imshow(picture)
     plt.show()
 
     while True:

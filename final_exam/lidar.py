@@ -26,12 +26,15 @@ class lidar():
     def __del__(self):
         self.lidar.stop()
 
-"""
-------------------------------
-how to use:
-    from lidar import lidar
+if __name__ == "__main__":
     my_lidar_object = lidar()
-    print(my_lidar_object.lidar_output)
-    print(my_lidar_object.local_time)
-------------------------------
-"""
+    import matplotlib.pyplot as plt
+    from time import sleep
+    from math import cos, sin
+    sleep(1)
+    while (True):
+        for i in list(my_lidar_object.lidar_output.keys()):
+            if time() - my_lidar_object.lidar_output[i][1] < 1:
+                plt.scatter(cos(i/57.3)*my_lidar_object.lidar_output[i][0], sin(i/57.3)*my_lidar_object.lidar_output[i][0], color="blue")
+        plt.scatter(0,0,color="green")
+        plt.show()
