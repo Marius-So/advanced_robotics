@@ -139,7 +139,7 @@ def get_bin_detection(mask, bins = 8, tr= 0.01):
 
     return detection_bins
 
-"""
+
 def get_all_detections(masks, bins = 8, tr = 0.01):
     res = []
     for mask in masks:
@@ -147,7 +147,7 @@ def get_all_detections(masks, bins = 8, tr = 0.01):
         res.append(value)
     return np.concatenate(res).reshape(-1,bins)
 
-
+"""
 def update_centers(self):
     for mask in self.masks:
         M = cv2.moments(self.masks[mask])
