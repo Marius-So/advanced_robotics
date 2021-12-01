@@ -14,13 +14,20 @@ def simulation_behaviour():
 			l = simulator.lidar_sensor(0)
 			a = l.index(min(l))
 			if a > 180:
-				speed = [10, -10] 
+				speed1 = [10, -10] 
 			else:
-				speed = [-10, 10]
+				speed1 = [-10, 10]
 		else:
-			speed=[10,10]
-		simulator.simulate([speed, [randrange(40)-20, randrange(40)-20], [randrange(40)-20,randrange(40)-20]], 0.1)
+			speed1=[10,10]
+		speed2 = [15,10]
+		if simulator.robots[1][-1][0] > 1 or simulator.robots[1][-1][0] < -1 or simulator.robots[1][-1][1] > 1 or simulator.robots[1][-1][1] < -1:
+			speed2 = [10,15]
+		speed3 = [10,15]
+		if simulator.robots[2][-1][0] > 1 or simulator.robots[2][-1][0] < -1 or simulator.robots[2][-1][1] > 1 or simulator.robots[2][-1][1] < -1:
+			speed3 = [15,10]
+		simulator.simulate([speed1, speed3, speed2], 0.1)
 	simulator.save()
+	print(simulator.fitness)
 
 
 def real_behaviour():

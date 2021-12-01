@@ -41,5 +41,5 @@ while i < s:
 			if y > - 100:
 				plt.plot([r[0] * cos(-angle) + x + r[2] * sin(-angle), r[1] * cos(-angle) + x + r[3] * sin(-angle)], [r[2] * cos(-angle) + y - r[0] * sin(-angle) , r[3] * cos(-angle) + y - r[1] * sin(-angle)], 'b')
 		i += 1
-	i += 9
+	i += 101
 	plt.pause(0.01)

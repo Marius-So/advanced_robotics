@@ -27,6 +27,8 @@ class NN():
         for i in range(len(self.Ws)):
             z = np.dot(self.Ws[i].T, a) + self.Bs[i].T
             a = np.array([self.sigmoid(zi) for zi in z])
+        a[0] = a[0] * 40 - 20
+        a[1] = a[1] * 40 - 20
         return a
 
 def get_number_of_genes(input_neurons, hidden_neurons, output_neurons):
