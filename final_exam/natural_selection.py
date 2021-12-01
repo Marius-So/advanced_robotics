@@ -13,7 +13,6 @@ class learn:
 		self.best_avoider_genes = [self.avoider_genes, 0]
 
 	def learn(self):
-		evolve_seeker = True
 		for simulation in range(1, 1001):
 			print(simulation)
 			evolve_seeker = (self.best_avoider_genes[1] > self.best_seeker_genes[1])
