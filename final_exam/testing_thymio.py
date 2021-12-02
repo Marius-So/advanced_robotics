@@ -13,6 +13,7 @@ def test_colors(thymioController):
         print(colour)
         thymioController.set_colour(colour)
         thymioController.set_speed(0, 0)
+        thymioController.get_sensor_values()
         # thymioController.play_tune()
 
 
@@ -84,11 +85,12 @@ if __name__ == '__main__':
     # check command-line arguments
     # create and run controller
     thymioController = Thymio()
+    test_colors(thymioController)
     #test_movements(thymioController)
     #for i in range(1):
     #    test_colors(thymioController)
     #test_movements(thymioController)
-    test_sensors(thymioController)
+    #test_sensors(thymioController)
     #while True:
      #   time.sleep(1)
      #   print(np.array(thymioController.get_sensor_values()[0]))

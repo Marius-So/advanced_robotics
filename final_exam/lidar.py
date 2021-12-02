@@ -13,8 +13,8 @@ class lidar():
         lidar_thread.start()
 
     def lidar_sensing(self):
-		for i in range(360):
-			self.lidar_output[i] = inf, time()
+        for i in range(360):
+            self.lidar_output[i] = inf, time()
         while True:
             try:
                 for scan in self.lidar.iter_scans():

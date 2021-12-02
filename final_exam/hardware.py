@@ -9,4 +9,4 @@ class input_output(Thymio, camera, lidar):
     def __init__(self):
         camera.__init__(self)
         lidar.__init__(self)
-        Thymio.__init__(self)
+        #Thymio.__init__(self)

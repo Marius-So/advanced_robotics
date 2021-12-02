@@ -119,11 +119,7 @@ class Thymio(object):
         received = self.get_variable("thymio-II", "prox.comm.rx")
         if received is not None:
             rx = received[0]
-        print(np.array(prox_horizontal))
-        print(np.array(ground_reflected))
-        print(np.array(left_speed))
-        print(np.array(right_speed))
-        print(np.array(rx))
+
         return np.array(prox_horizontal), np.array(ground_reflected), np.array(left_speed), np.array(right_speed), np.array(rx)
 
     def send_code(self, code):
@@ -136,13 +132,27 @@ class Thymio(object):
 
     def test_Comunications(self, msg):
     #This enables the prox.comm rx value to zero, gets overwritten when receiving a value
-        print("YEA2")
         while True:
             received = 999
             self.send_code(msg)
-            received = self.get_sensor_values()[4]
+            all_values = self.get_sensor_values()
+            received = all_values[4]
             print("received: " + str(received))
             print("send: " + str(msg))
+            print(all_values)
+
+    def test_other(self):
+        self.set_colour('purple')
+        self.set_speed(0,0)
+        self.get_sensor_values()
+        for colour in ['red','orange','blue','green','purple']:
+            time.sleep(3)
+            print(colour)
+            self.set_colour(colour)
+            self.set_speed(0,0)
+            self.get_sensor_values()
+
+
 
 def main():
     # check command-line arguments
@@ -155,8 +165,10 @@ def main():
         print(colour)
         thymioController.set_colour(colour)
         thymioController.set_speed(0,0)
+        thymioController.get_sensor_values()
 
 if __name__ == '__main__':
-    #main()
-    tm = Thymio()
-    tm.test_Comunications(19)
+    main()
+    #tm = Thymio()
+    #tm.test_Comunications(19)
+    #tm.test_other()
