@@ -16,6 +16,7 @@ class kinematic_simulator:
 		self.h = 0.053 # z of the robot
 		self.robots = robots
 		self.colors = colors
+		self.fitness = [0 for i in range(len(self.robots))]
 
 		self.simulation_timestep = simulation_timestep  # timestep in kinematics sim (probably don't touch..)
 
@@ -224,9 +225,20 @@ class kinematic_simulator:
 			if self.colors[i] == "red":
 				for j in range(len(self.robots)):
 					if self.colors[j] == "blue":
-						if (self.robots[i][-1][0] - self.robots[j][-1][0])*(self.robots[i][-1][0] - self.robots[j][-1][0]) + (self.robots[i][-1][1] - self.robots[j][-1][1])*(self.robots[i][-1][1] - self.robots[j][-1][1]) < 0.05:
-							self.robots[j][-1][1] = -200
+						if (self.robots[i][-1][0] - self.robots[j][-1][0])*(self.robots[i][-1][0] - self.robots[j][-1][0]) + (self.robots[i][-1][1] - self.robots[j][-1][1])*(self.robots[i][-1][1] - self.robots[j][-1][1]) < 0.3:
+							#self.robots[j][-1][1] = -20000
 							self.colors[j] = "orange"
+
+
+		to_add = 0
+		for i in range(len(self.robots)):
+			if self.colors[i] == "blue" or self.colors[i] == "green":
+				self.fitness[i] += 1
+			elif self.colors[i] == "orange" or self.colors[i] == "yelow":
+				to_add += 1
+			elif self.colors[i] == "red":
+				indice_seeker = i
+		self.fitness[indice_seeker] += to_add
 
 
 if __name__ == "__main__":
