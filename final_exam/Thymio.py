@@ -7,6 +7,7 @@ import sys
 import os
 import time
 import sys
+import numpy as np
 
 thymio_colour = {
     'red': [32,0,0],
@@ -57,10 +58,11 @@ class Thymio(object):
 
         self.turn_off_leds()
         #enables the prox.com communication
-        self.asebaNetwork.SendEventName( "prox.comm.enable", [1])
+        self.send_event( "prox.comm.enable", [1])
         # TODO: check for error when using  -> prox.comm.
         #enables the prox.comm rx value to zero
-        self.asebaNetwork.SendEventName("prox.comm.tx",[0])
+        self.send_event("prox.comm.tx",[0])
+        self.send_event("prox.comm.rx",[0])
 
     def __del__(self):
         self.set_speed(0,0)
@@ -75,6 +77,9 @@ class Thymio(object):
             reply_handler=self.dbusReply,
             error_handler=self.dbusError
         )
+
+    def get_variable(self, name, var):
+        return self.asebaNetwork.GetVariable(name, var)
 
     def turn_off_leds(self):
         self.send_event('leds.prox.v',[0,0])
@@ -103,17 +108,23 @@ class Thymio(object):
     def get_sensor_values(self):
         # read and display acc sensors
         #self.acc = self.asebaNetwork.GetVariable('thymio-II', 'acc')
-        prox_horizontal = self.asebaNetwork.GetVariable('thymio-II', 'prox.horizontal')
-        ground_ambiant = self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.ambiant')
-        ground_reflected = self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.reflected')
-        ground_delta = self.asebaNetwork.GetVariable('thymio-II', 'prox.ground.delta')
-        left_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.left.speed")
-        right_speed = self.asebaNetwork.GetVariable("thymio-II", "motor.right.speed")
+        prox_horizontal = self.get_variable('thymio-II', 'prox.horizontal')
+        ground_ambiant = self.get_variable('thymio-II', 'prox.ground.ambiant')
+        ground_reflected = self.get_variable('thymio-II', 'prox.ground.reflected')
+        ground_delta = self.get_variable('thymio-II', 'prox.ground.delta')
+        left_speed = self.get_variable("thymio-II", "motor.left.speed")
+        right_speed = self.get_variable("thymio-II", "motor.right.speed")
 
         # sending and receiving information
-        received = self.asebaNetwork.GetVariable("thymio-II", "prox.comm.rx")
-        rx = received[0]
-        return prox_horizontal, ground_reflected, left_speed, right_speed, rx
+        received = self.get_variable("thymio-II", "prox.comm.rx")
+        if received is not None:
+            rx = received[0]
+        print(np.array(prox_horizontal))
+        print(np.array(ground_reflected))
+        print(np.array(left_speed))
+        print(np.array(right_speed))
+        print(np.array(rx))
+        return np.array(prox_horizontal), np.array(ground_reflected), np.array(left_speed), np.array(right_speed), np.array(rx)
 
     def send_code(self, code):
         self.asebaNetwork.SendEventName("prox.comm.tx", [code])

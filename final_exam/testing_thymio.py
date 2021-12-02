@@ -84,11 +84,11 @@ if __name__ == '__main__':
     # check command-line arguments
     # create and run controller
     thymioController = Thymio()
-    test_movements(thymioController)
-    for i in range(5):
-        test_colors(thymioController)
     #test_movements(thymioController)
-    #test_sensors(thymioController)
+    #for i in range(1):
+    #    test_colors(thymioController)
+    #test_movements(thymioController)
+    test_sensors(thymioController)
     #while True:
      #   time.sleep(1)
      #   print(np.array(thymioController.get_sensor_values()[0]))
