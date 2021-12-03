@@ -8,8 +8,8 @@ nbin = 5
 
 class learn:
 	def __init__(self):
-		self.s_genes = 490
-		self.s_input = 37
+		self.s_genes = 510
+		self.s_input = 39
 		if os.path.isfile("seeker.txt"):
 			self.seeker_genes = np.loadtxt("seeker.txt", delimiter=", ")
 		else:
@@ -44,15 +44,18 @@ class learn:
 			for i in range(180):
 				a = self.simulator.lidar_sensor(0)
 				b = [self.simulator.camera(0, "red", nbin), self.simulator.camera(0, "yelow", nbin), self.simulator.camera(0, "blue", nbin), self.simulator.camera(0, "green", nbin), self.simulator.camera(0, "purple", nbin)]
-				d = build_input(a,b, 30)
+				c = self.simulator.ground_sensor(0)
+				d = build_input(a,b,c, 30)
 				speed1 = self.seeker_nn.forward_propagation(d)
 				a = self.simulator.lidar_sensor(1)
 				b = [self.simulator.camera(1, "red", nbin), self.simulator.camera(1, "yelow", nbin), self.simulator.camera(1, "blue", nbin), self.simulator.camera(1, "green", nbin), self.simulator.camera(1, "purple", nbin)]
-				d = build_input(a,b, 30)
+				c = self.simulator.ground_sensor(1)
+				d = build_input(a,b,c, 30)
 				speed2 = self.avoider_nn.forward_propagation(d)
 				a = self.simulator.lidar_sensor(2)
 				b = [self.simulator.camera(2, "red", nbin), self.simulator.camera(2, "yelow", nbin), self.simulator.camera(2, "blue", nbin), self.simulator.camera(2, "green", nbin), self.simulator.camera(2, "purple", nbin)]
-				d = build_input(a,b, 30)
+				c = self.simulator.ground_sensor(2)
+				d = build_input(a,b,c, 30)
 				speed3 = self.avoider_nn.forward_propagation(d)
 				self.simulator.simulate([speed1, speed2, speed3], 0.5)
 			del self.seeker_nn
@@ -72,7 +75,7 @@ class learn:
 			print(self.simulator.fitness)
 			del self.simulator
 
-def build_input(lidar_output, camera_output, ds=10):
+def build_input(lidar_output, camera_output, ground, ds=10):
 	output = []
 	for i in range(0, 360, ds):
 		for j in range(i, i + ds):
@@ -86,6 +89,8 @@ def build_input(lidar_output, camera_output, ds=10):
 	for i in camera_output:
 		for j in i:
 			output.append(j)
+	output.append(ground[0])
+	output.append(ground[1])
 	return output
 
 if __name__ == "__main__":

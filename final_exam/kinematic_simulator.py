@@ -30,6 +30,14 @@ class kinematic_simulator:
 		# the equations are a forward kinematic model of a two-wheeled robot - don't worry just use it
 
 		#use this function to calculate intersection point with seg1 and seg2
+
+	def ground_sensor(self, i):
+		if self.robots[i][-1][0] < -1.4 or self.robots[i][-1][0] > 1.4 or self.robots[i][-1][1] < -1.4 or self.robots[i][-1][1] > 1.4:
+			return [1, 0]
+		elif self.robots[i][-1][0] < 0.1 and self.robots[i][-1][0] > -0.1 and self.robots[i][-1][1] < 0.1 and self.robots[i][-1][1] > -0.1:
+			return [0,1]
+		return [0,0]
+		
 	def how_far_seg2_from_seg1(self, seg1, seg2):
 		dx1 = seg1[0] - seg1[1]
 		dx2 = seg2[0] - seg2[1]
@@ -129,8 +137,12 @@ class kinematic_simulator:
 		x = self.robots[i][-1][0]
 		y = self.robots[i][-1][1]
 		q = self.robots[i][-1][2]
+		if self.colors[i] == "red":
+			offset = 5.759586
+		else:
+			offset = 4.249876
 		for a in range(60,0, -1):
-			angle = q + a / 57.2957795131 + 5.759586
+			angle = q + a / 57.2957795131 + offset
 			ss = [x, x + 15 * cos(angle), y, y + 15 * sin(angle)]
 			minv = 999999999
 			for j in range(len(self.robots)):
@@ -219,14 +231,14 @@ class kinematic_simulator:
 		for cnt in range(int(sec / self.simulation_timestep)):
 			for i in range(len(instructions)):
 				self.step(self.robots[i], instructions[i])
-				if self.robots[i][-1][0] < -1:
-					self.robots[i][-1][0] = -1
-				if self.robots[i][-1][0] > 1:
-					self.robots[i][-1][0] = 1
-				if self.robots[i][-1][1] < -1:
-					self.robots[i][-1][1] = -1
-				if self.robots[i][-1][1] > 1:
-					self.robots[i][-1][1] = 1
+				if self.robots[i][-1][0] < -1.5 or self.robots[i][-1][0] > 1.5 or self.robots[i][-1][1] < -1.5 or self.robots[i][-1][1] > 1.5:
+					self.fitness[i] -= 5
+				if self.robots[i][-1][0] < 0.1 and self.robots[i][-1][0] > -0.1 and self.robots[i][-1][1] < 0.1 and self.robots[i][-1][1] > -0.1:
+					if self.colors[i] == "blue":
+						self.colors[i] = "green"
+				else:
+					if self.colors[i] == "green":
+						self.colors[i] = "blue"
 		
 		#change colors if catched
 		for i in range(len(self.robots)):
@@ -237,7 +249,7 @@ class kinematic_simulator:
 							#self.robots[j][-1][1] = -20000
 							self.colors[j] = "orange"
 
-		#comute fitness
+		#compute fitness
 		to_add = 0
 		for i in range(len(self.robots)):
 			if self.colors[i] == "blue" or self.colors[i] == "green":
