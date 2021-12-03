@@ -29,7 +29,8 @@ s = len(lines)
 i = 0
 while i < s:
 	plt.cla()
-	plt.scatter([-1, -1, 1,1], [-1,1,1,-1])
+	plt.scatter([-1.5, -1.5, 1.5,1.5], [-1.5,1.5,1.5,-1.5], color="red")
+	plt.scatter([-0.1, -0.1, 0.1, 0.1], [-0.1,0.1,0.1,-0.1], color="green")
 	for w in walls:
 		plt.plot([w[0], w[1]], [w[2], w[3]], 'g')
 	red = 0
