@@ -10,8 +10,6 @@ class controller(input_output,):
 	def __init__(self, avoider=True, genes = []):
 		input_output.__init__(self)
 		# TODO: type of contoller
-		thymio = Thymio()
-		self.my_robot = thymio
 
 		self.active = True
 		self.avoider = avoider
@@ -19,46 +17,46 @@ class controller(input_output,):
 
 
 		if self.avoider:
-			self.my_robot.set_colour('blue')
+			self.set_colour('blue')
 			self.cur_colour = 'blue'
 			self.transmission_code = 2
 
 		else:
-			self.my_robot.set_colour('red')
+			self.set_colour('red')
 			self.cur_colour = 'red'
 			self.transmission_code = 1
 		# then we create the feed forward network based on the genes
 		# TODO: create nn based on the genes
-		#self.NN = NN(genes, input_neurons=100, hidden_neurons=10, output_neurons=2)
+		self.NN = NN(genes, input_neurons=39, hidden_neurons=10, output_neurons=10)
 
 	def mainloop(self):
 		# update sensor values
-		prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.my_robot.get_sensor_values()
+		prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
 		print(prox_horizontal, ground_reflected, left_speed, right_speed)
 		# behavior when avoider
 		if self.avoider:
 			if rx == 1:
-				self.my_robot.set_colour('purple')
-				self.my_robot.set_speed(0,0)
+				self.set_colour('purple')
+				self.set_speed(0,0)
 				self.active = False
 
 			# TODO: fix these values for the save zone
 			if 200 < ground_reflected[0] < 500:
-				self.my_robot.set_colour('green')
+				self.set_colour('green')
 				self.cur_colour = 'green'
-				self.my_robot.send_code(3)
+				self.send_code(3)
 
 			elif self.cur_colour != 'blue':
-				self.my_robot.set_colour('blue')
+				self.set_colour('blue')
 				self.cur_colour = 'blue'
 
 			if self.cur_colour == 'green' and rx == 2:
 				# we need to speed out of the safe zone
-				self.my_robot.set_speed(100,100)
+				self.set_speed(100,100)
 				self.locked_sender = time() + 5
 				# TODO stop transmitting
 				self.transmission_code = 3
-				self.my_robot.send_code(self.transmission_code)
+				self.send_code(self.transmission_code)
 				sleep(2)
 
 			if self.transmission_code == 3 and time() > self.locked_sender:
@@ -68,11 +66,11 @@ class controller(input_output,):
 		# behavior when seeker
 		else:
 			if 200 < ground_reflected[0] < 500:
-				self.my_robot.set_colour('orange')
+				self.set_colour('orange')
 				self.cur_colour = 'orange'
 
 			elif self.cur_colour != 'red':
-				self.my_robot.set_colour('red')
+				self.set_colour('red')
 				self.cur_colour = 'red'
 
 		# avoid the black tape
@@ -83,19 +81,20 @@ class controller(input_output,):
 			else:
 				l = 0
 				r = - right_speed
-			self.my_robot.set_speed(l,r)
+			self.set_speed(l,r)
 
 			while ground_reflected[0] < 200:
-				prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.my_robot.get_sensor_values()
+				prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
 				sleep(0.5)
 
-		self.my_robot.send_code(self.transmission_code)
+		self.send_code(self.transmission_code)
 
 		# here comes the wheel input based on the genes
 		# TODO: for now we just send random wheel speeds
-		#decision_input = self.build_input(self.lidar_output(), self.get_camera_output())
+		decision_input = self.build_input()
+		print(ground_reflected[0])
 
-		self.my_robot.set_speed(np.random.random() * 50, np.random.random()*50)
+		self.set_speed(np.random.random() * 50, np.random.random()*50)
 
 	def run(self):
 		count = 0
@@ -112,7 +111,7 @@ class controller(input_output,):
 		colour_masks = analyse_for_colours(picture)
 		return get_all_detections(colour_masks)
 
-	def build_input(self, lidar_output, camera_output, ds=10):
+	def build_input(self, ds=10):
 		lidar_output = self.lidar_output
 		camera_output = self.get_camera_output()
 		output = []
@@ -132,5 +131,6 @@ class controller(input_output,):
 
 
 if __name__ == "__main__":
-	robot = controller()
+	genes = np.loadtxt('avoider.txt', delimiter=', ')
+	robot = controller(genes=genes)
 	robot.run()
