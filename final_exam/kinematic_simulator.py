@@ -219,17 +219,25 @@ class kinematic_simulator:
 		for cnt in range(int(sec / self.simulation_timestep)):
 			for i in range(len(instructions)):
 				self.step(self.robots[i], instructions[i])
+				if self.robots[i][-1][0] < -1:
+					self.robots[i][-1][0] = -1
+				if self.robots[i][-1][0] > 1:
+					self.robots[i][-1][0] = 1
+				if self.robots[i][-1][1] < -1:
+					self.robots[i][-1][1] = -1
+				if self.robots[i][-1][1] > 1:
+					self.robots[i][-1][1] = 1
 		
 		#change colors if catched
 		for i in range(len(self.robots)):
 			if self.colors[i] == "red":
 				for j in range(len(self.robots)):
 					if self.colors[j] == "blue":
-						if (self.robots[i][-1][0] - self.robots[j][-1][0])*(self.robots[i][-1][0] - self.robots[j][-1][0]) + (self.robots[i][-1][1] - self.robots[j][-1][1])*(self.robots[i][-1][1] - self.robots[j][-1][1]) < 0.3:
+						if (self.robots[i][-1][0] - self.robots[j][-1][0])*(self.robots[i][-1][0] - self.robots[j][-1][0]) + (self.robots[i][-1][1] - self.robots[j][-1][1])*(self.robots[i][-1][1] - self.robots[j][-1][1]) < 0.1:
 							#self.robots[j][-1][1] = -20000
 							self.colors[j] = "orange"
 
-
+		#comute fitness
 		to_add = 0
 		for i in range(len(self.robots)):
 			if self.colors[i] == "blue" or self.colors[i] == "green":
@@ -239,7 +247,6 @@ class kinematic_simulator:
 			elif self.colors[i] == "red":
 				indice_seeker = i
 		self.fitness[indice_seeker] += to_add
-
 
 if __name__ == "__main__":
 	import matplotlib.pyplot as plt

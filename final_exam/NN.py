@@ -1,5 +1,7 @@
 import numpy as np
 
+speed = [-10, -5, 0, 5, 10]
+
 class NN():
     def __init__(self, genes, input_neurons, hidden_neurons, output_neurons):
         # TODO: split the genotype to the weights that we need for the NN
@@ -27,9 +29,7 @@ class NN():
         for i in range(len(self.Ws)):
             z = np.dot(self.Ws[i].T, a) + self.Bs[i].T
             a = np.array([self.sigmoid(zi) for zi in z])
-        a[0] = a[0] * 40 - 20
-        a[1] = a[1] * 40 - 20
-        return a
+        return [speed[np.argmax(a[0:5])], speed[np.argmax(a[5:10])]]
 
 def get_number_of_genes(input_neurons, hidden_neurons, output_neurons):
     return (input_neurons + 1) * (hidden_neurons) + (hidden_neurons +1) * output_neurons
