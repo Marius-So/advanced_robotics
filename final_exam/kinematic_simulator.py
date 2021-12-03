@@ -231,7 +231,7 @@ class kinematic_simulator:
 		for cnt in range(int(sec / self.simulation_timestep)):
 			for i in range(len(instructions)):
 				self.step(self.robots[i], instructions[i])
-				if self.robots[i][-1][0] < -1.5 or self.robots[i][-1][0] > 1.5 or self.robots[i][-1][1] < -1.5 or self.robots[i][-1][1] > 1.5:
+				if (self.robots[i][-1][0] < -1.5 or self.robots[i][-1][0] > 1.5 or self.robots[i][-1][1] < -1.5 or self.robots[i][-1][1] > 1.5) and self.colors[i] != "red":
 					self.fitness[i] -= 5
 				if self.robots[i][-1][0] < 0.1 and self.robots[i][-1][0] > -0.1 and self.robots[i][-1][1] < 0.1 and self.robots[i][-1][1] > -0.1:
 					if self.colors[i] == "blue":
@@ -245,7 +245,7 @@ class kinematic_simulator:
 			if self.colors[i] == "red":
 				for j in range(len(self.robots)):
 					if self.colors[j] == "blue":
-						if (self.robots[i][-1][0] - self.robots[j][-1][0])*(self.robots[i][-1][0] - self.robots[j][-1][0]) + (self.robots[i][-1][1] - self.robots[j][-1][1])*(self.robots[i][-1][1] - self.robots[j][-1][1]) < 0.1:
+						if (self.robots[i][-1][0] - self.robots[j][-1][0])*(self.robots[i][-1][0] - self.robots[j][-1][0]) + (self.robots[i][-1][1] - self.robots[j][-1][1])*(self.robots[i][-1][1] - self.robots[j][-1][1]) < 0.3:
 							#self.robots[j][-1][1] = -20000
 							self.colors[j] = "orange"
 
