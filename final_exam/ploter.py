@@ -29,24 +29,15 @@ s = len(lines)
 i = 0
 while i < s:
 	plt.cla()
-	plt.scatter([-1.5, -1.5, 1.5,1.5], [-1.5,1.5,1.5,-1.5], color="red")
-	plt.scatter([-0.1, -0.1, 0.1, 0.1], [-0.1,0.1,0.1,-0.1], color="green")
 	for w in walls:
 		plt.plot([w[0], w[1]], [w[2], w[3]], 'g')
-	red = 0
 	while (lines[i] != '---\n'):
-		if red == 0:
-			color = "red"
-			red = 1
-		else:
-			color = "blue"
 		a, b, c = lines[i].split(",")
 		x = float(a)
 		y = float(b)
 		angle = float(c)
 		for r in robot:
-			if y > - 100:
-				plt.plot([r[0] * cos(-angle) + x + r[2] * sin(-angle), r[1] * cos(-angle) + x + r[3] * sin(-angle)], [r[2] * cos(-angle) + y - r[0] * sin(-angle) , r[3] * cos(-angle) + y - r[1] * sin(-angle)], 'b', color=color)
+			plt.plot([r[0] * cos(-angle) + x + r[2] * sin(-angle), r[1] * cos(-angle) + x + r[3] * sin(-angle)], [r[2] * cos(-angle) + y - r[0] * sin(-angle) , r[3] * cos(-angle) + y - r[1] * sin(-angle)], 'b')
 		i += 1
-	i += 101
+	i += 1
 	plt.pause(0.01)
