@@ -31,7 +31,7 @@ while i < s:
 	plt.cla()
 	for w in walls:
 		plt.plot([w[0], w[1]], [w[2], w[3]], 'g')
-	plt.scatter([-1.5, -1.5, 1.5,1.5], [-1.5,1.5,1.5,-1.5], color="red")
+	plt.scatter([-1, -1, 1,1], [-0.75,0.75,0.75,-0.75], color="red")
 	plt.scatter([-0.1, -0.1, 0.1,0.1], [-0.1,0.1,0.1,-0.1], color="green")
 	color = "red"
 	while (lines[i] != '---\n'):
