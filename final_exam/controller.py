@@ -94,7 +94,14 @@ class controller(input_output,):
 		decision_input = self.build_input()
 		print(ground_reflected[0])
 
-		self.set_speed(np.random.random() * 50, np.random.random()*50)
+
+
+		d = self.build_input(30)
+		print(d)
+		print(len(d))
+		l_sp, r_sp = self.NN.forward_propagation(d)
+
+		self.set_speed(l_sp *50, r_sp*50)
 
 	def run(self):
 		count = 0
@@ -109,7 +116,7 @@ class controller(input_output,):
 	def get_camera_output(self):
 		picture = self.take_picture()
 		colour_masks = analyse_for_colours(picture)
-		return get_all_detections(colour_masks)
+		return get_all_detections(colour_masks, bins=5)
 
 	def build_input(self, ds=10):
 		lidar_output = self.lidar_output
@@ -127,8 +134,11 @@ class controller(input_output,):
 		for i in camera_output:
 			for j in i:
 				output.append(j)
-		return output
 
+			# TODO remove hard code
+		output.append(0)
+		output.append(0)
+		return output
 
 if __name__ == "__main__":
 	genes = np.loadtxt('avoider.txt', delimiter=', ')
