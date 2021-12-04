@@ -62,12 +62,14 @@ class learn:
 			del self.avoider_nn
 			if self.best_avoider_genes[1] > self.best_seeker_genes[1]:
 				if self.simulator.fitness[0] > self.best_seeker_genes[1]:
+					print("save seeker")
 					self.best_seeker_genes = [np.copy(self.seeker_genes), self.simulator.fitness[0]]
 					self.best_avoider_genes[1] = 0.5*self.simulator.fitness[1] + 0.5*self.simulator.fitness[2]
 					np.savetxt("seeker.txt", [self.best_seeker_genes[0]], delimiter=", ")
 					self.simulator.save()
 			else:
 				if self.simulator.fitness[1] + self.simulator.fitness[2] > 2*self.best_avoider_genes[1]:
+					print("save avoider")
 					self.best_avoider_genes = [np.copy(self.avoider_genes), 0.5*self.simulator.fitness[1] + 0.5*self.simulator.fitness[2]]
 					self.best_seeker_genes[1] = self.simulator.fitness[0]
 					np.savetxt("avoider.txt", [self.best_avoider_genes[0]], delimiter=", ")
