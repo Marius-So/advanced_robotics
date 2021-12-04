@@ -245,8 +245,9 @@ class kinematic_simulator:
 			if self.colors[i] == "red":
 				for j in range(len(self.robots)):
 					if self.colors[j] == "blue":
-						if (self.robots[i][-1][0] - self.robots[j][-1][0])*(self.robots[i][-1][0] - self.robots[j][-1][0]) + (self.robots[i][-1][1] - self.robots[j][-1][1])*(self.robots[i][-1][1] - self.robots[j][-1][1]) < 0.1:
+						if ((self.robots[i][-1][0] - self.robots[j][-1][0])**2 + (self.robots[i][-1][1] - self.robots[j][-1][1])**2)**0.5 < 0.1:
 							#self.robots[j][-1][1] = -20000
+							self.fitness[0] *= 2
 							self.colors[j] = "orange"
 
 		#compute fitness
