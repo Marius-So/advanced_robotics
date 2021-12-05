@@ -91,8 +91,8 @@ def analyse_for_colours(image, k_size = 10):
     red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
 
      # yellow
-    lower_yellow = np.array([0,100,100])
-    upper_yellow = np.array([50,255,255])
+    lower_yellow = np.array([0,50,50])
+    upper_yellow = np.array([30,255,255])
     yellow_mask = cv2.inRange(input_hsv, lower_yellow, upper_yellow)
     yellow_mask = cv2.morphologyEx(yellow_mask, cv2.MORPH_OPEN, kernel)
 
@@ -135,11 +135,11 @@ def get_bin_detection(mask, bins = 8, tr= 0.01):
     for idx in range(bins):
         percent = np.sum(mask.T[idx*bin_width:(idx+1)*bin_width]) / (y*bin_width)
         if percent > tr:
-            detection_bins[idx] = np.sum(mask.T[idx*bin_width:(idx+1)*bin_width]) / (y*bin_width)
+            detection_bins[idx] = 1 #np.sum(mask.T[idx*bin_width:(idx+1)*bin_width]) / (y*bin_width)
 
     return detection_bins
 
-def get_all_detections(masks, bins = 8, tr = 0.01):
+def get_all_detections(masks, bins = 5, tr = 0.03):
     res = []
     for mask in masks:
         value =get_bin_detection(mask, bins, tr)

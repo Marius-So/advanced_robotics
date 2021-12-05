@@ -32,7 +32,7 @@ class controller(input_output,):
 	def mainloop(self):
 		# update sensor values
 		prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
-		print(prox_horizontal, ground_reflected, left_speed, right_speed)
+		print(ground_reflected)
 		# behavior when avoider
 		if self.avoider:
 			if rx == 1:
@@ -92,16 +92,12 @@ class controller(input_output,):
 		# here comes the wheel input based on the genes
 		# TODO: for now we just send random wheel speeds
 		decision_input = self.build_input()
-		print(ground_reflected[0])
-
-
+		print(self.get_camera_output())
 
 		d = self.build_input(30)
-		print(d)
-		print(len(d))
 		l_sp, r_sp = self.NN.forward_propagation(d)
 
-		self.set_speed(l_sp *50, r_sp*50)
+		self.set_speed(l_sp *0, r_sp*0)
 
 	def run(self):
 		count = 0
