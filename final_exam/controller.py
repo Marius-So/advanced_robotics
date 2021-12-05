@@ -142,7 +142,8 @@ class controller(input_output,):
 			output.append(0)
 			output.append(1)
 		else:
-			output.append(1)
+			#TODO: hard code for testing on black floor
+			output.append(0)
 			output.append(0)
 		return output
 
