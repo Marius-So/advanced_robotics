@@ -125,10 +125,10 @@ class controller(input_output,):
 				m = float('inf')
 				if time() - lidar_output[(j + 180)%360][1] < 1 and lidar_output[(j + 180)%360][0] < m:
 					m = lidar_output[(j + 180)%360][0]
-			if m == float('inf'):
+			if m == float('inf') or m > 1999:
 				output.append(0)
 			else:
-				output.append(1 - m/1000)
+				output.append(1 - m/2000)
 		for i in camera_output:
 			for j in i:
 				output.append(j)

@@ -138,10 +138,10 @@ class kinematic_simulator:
 		y = self.robots[i][-1][1]
 		q = self.robots[i][-1][2]
 		if self.colors[i] == "red":
-			offset = 5.759586
+			offset = 5.820673
 		else:
 			offset = 4.249876
-		for a in range(60):
+		for a in range(53):
 			angle = q + a / 57.2957795131 + offset
 			ss = [x, x + 15 * cos(angle), y, y + 15 * sin(angle)]
 			minv = 999999999
@@ -155,7 +155,7 @@ class kinematic_simulator:
 						v = self.how_far_seg2_from_seg1(ss,ss2)
 						if v != None:
 							if self.colors[j] == color:
-								ret[a*(nbins-1)//60] = 1
+								ret[a*(nbins-1)//53] = 1
 		return ret
 
 
