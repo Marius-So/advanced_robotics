@@ -57,6 +57,7 @@ def test_sensors(thymioController):
             thymioController.set_speed(0, 0)
             time.sleep(0.5)
             step = thymioController.get_sensor_values()[0]
+            print(thymioController.get_sensor_values())
             # take messurements and save them in the list
             r1.append(step[0])
             r2.append(step[2])
@@ -85,12 +86,12 @@ if __name__ == '__main__':
     # check command-line arguments
     # create and run controller
     thymioController = Thymio()
-    test_colors(thymioController)
+    #test_colors(thymioController)
     #test_movements(thymioController)
     #for i in range(1):
     #    test_colors(thymioController)
     #test_movements(thymioController)
-    #test_sensors(thymioController)
+    test_sensors(thymioController)
     #while True:
      #   time.sleep(1)
      #   print(np.array(thymioController.get_sensor_values()[0]))

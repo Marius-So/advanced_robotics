@@ -32,7 +32,6 @@ class controller(input_output,):
 	def mainloop(self):
 		# update sensor values
 		prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
-		print(ground_reflected)
 		# behavior when avoider
 		if self.avoider:
 			if rx == 1:
@@ -74,30 +73,29 @@ class controller(input_output,):
 				self.cur_colour = 'red'
 
 		# avoid the black tape
-		if ground_reflected[0] < 200:
-			if np.random.random() < 0.5:
-				l = - left_speed
-				r = 0
-			else:
-				l = 0
-				r = - right_speed
-			self.set_speed(l,r)
+		# if ground_reflected[0] < 200:
+		# 	if np.random.random() < 0.5:
+		# 		l = - left_speed
+		# 		r = 0
+		# 	else:
+		# 		l = 0
+		# 		r = - right_speed
+		# 	self.set_speed(l,r)
 
-			while ground_reflected[0] < 200:
-				prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
-				sleep(0.5)
+		#	while ground_reflected[0] < 200:
+		#		prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
+		#		sleep(0.5)
 
 		self.send_code(self.transmission_code)
 
 		# here comes the wheel input based on the genes
 		# TODO: for now we just send random wheel speeds
 		decision_input = self.build_input()
-		print(self.get_camera_output())
 
 		d = self.build_input(30)
 		l_sp, r_sp = self.NN.forward_propagation(d)
 
-		self.set_speed(l_sp *0, r_sp*0)
+		self.set_speed(l_sp *50, r_sp*50)
 
 	def run(self):
 		count = 0
@@ -117,6 +115,7 @@ class controller(input_output,):
 	def build_input(self, ds=10):
 		lidar_output = self.lidar_output
 		camera_output = self.get_camera_output()
+		prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
 		output = []
 		for i in range(0, 360, ds):
 			for j in range(i, i + ds):
@@ -132,8 +131,16 @@ class controller(input_output,):
 				output.append(j)
 
 			# TODO remove hard code
-		output.append(0)
-		output.append(0)
+		if ground_reflected[0]>500:
+			output.append(0)
+			output.append(0)
+		elif ground_reflected[0]>200:
+			# hard coded safe zone
+			output.append(0)
+			output.append(1)
+		else:
+			output.append(0)
+			output.append(0)
 		return output
 
 if __name__ == "__main__":
