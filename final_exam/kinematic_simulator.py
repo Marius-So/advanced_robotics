@@ -32,7 +32,7 @@ class kinematic_simulator:
 		#use this function to calculate intersection point with seg1 and seg2
 
 	def ground_sensor(self, i):
-		if self.robots[i][-1][0] < -1.4 or self.robots[i][-1][0] > 1.4 or self.robots[i][-1][1] < -1.4 or self.robots[i][-1][1] > 1.4:
+		if self.robots[i][-1][0] < -0.7 or self.robots[i][-1][0] > 0.7 or self.robots[i][-1][1] < -0.95 or self.robots[i][-1][1] > 0.95:
 			return [1, 0]
 		elif self.robots[i][-1][0] < 0.1 and self.robots[i][-1][0] > -0.1 and self.robots[i][-1][1] < 0.1 and self.robots[i][-1][1] > -0.1:
 			return [0,1]
@@ -141,7 +141,7 @@ class kinematic_simulator:
 			offset = 5.759586
 		else:
 			offset = 4.249876
-		for a in range(60,0, -1):
+		for a in range(60):
 			angle = q + a / 57.2957795131 + offset
 			ss = [x, x + 15 * cos(angle), y, y + 15 * sin(angle)]
 			minv = 999999999
@@ -155,7 +155,7 @@ class kinematic_simulator:
 						v = self.how_far_seg2_from_seg1(ss,ss2)
 						if v != None:
 							if self.colors[j] == color:
-								ret[a*(nbins-1)//60] = 0.2
+								ret[a*(nbins-1)//60] = 1
 		return ret
 
 
@@ -231,7 +231,7 @@ class kinematic_simulator:
 		for cnt in range(int(sec / self.simulation_timestep)):
 			for i in range(len(instructions)):
 				self.step(self.robots[i], instructions[i])
-				if (self.robots[i][-1][0] < -1.5 or self.robots[i][-1][0] > 1.5 or self.robots[i][-1][1] < -1.5 or self.robots[i][-1][1] > 1.5) and self.colors[i] != "red":
+				if self.robots[i][-1][0] < -0.75 or self.robots[i][-1][0] > 0.75 or self.robots[i][-1][1] < -1 or self.robots[i][-1][1] > 1:
 					self.fitness[i] -= 5
 				if self.robots[i][-1][0] < 0.1 and self.robots[i][-1][0] > -0.1 and self.robots[i][-1][1] < 0.1 and self.robots[i][-1][1] > -0.1:
 					if self.colors[i] == "blue":
@@ -245,20 +245,18 @@ class kinematic_simulator:
 			if self.colors[i] == "red":
 				for j in range(len(self.robots)):
 					if self.colors[j] == "blue":
-						if (self.robots[i][-1][0] - self.robots[j][-1][0])*(self.robots[i][-1][0] - self.robots[j][-1][0]) + (self.robots[i][-1][1] - self.robots[j][-1][1])*(self.robots[i][-1][1] - self.robots[j][-1][1]) < 0.3:
+						if ((self.robots[i][-1][0] - self.robots[j][-1][0])**2 + (self.robots[i][-1][1] - self.robots[j][-1][1])**2)**0.5 < 0.1:
 							#self.robots[j][-1][1] = -20000
 							self.colors[j] = "orange"
 
 		#compute fitness
-		to_add = 0
-		for i in range(len(self.robots)):
+		for i in range(1, len(self.robots)):
+			d = ((self.robots[i][-1][0] - self.robots[0][-1][0])**2 + (self.robots[i][-1][1] - self.robots[0][-1][1])**2)**0.5
 			if self.colors[i] == "blue" or self.colors[i] == "green":
-				self.fitness[i] += 1
-			elif self.colors[i] == "orange" or self.colors[i] == "yelow":
-				to_add += 1
-			elif self.colors[i] == "red":
-				indice_seeker = i
-		self.fitness[indice_seeker] += to_add
+				self.fitness[0] += 1/(d*d)
+			else:
+				self.fitness[0] += 10
+			self.fitness[i] += d
 
 if __name__ == "__main__":
 	import matplotlib.pyplot as plt
