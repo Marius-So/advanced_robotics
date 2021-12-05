@@ -18,14 +18,10 @@ def test_colors(thymioController):
 
 
 def test_movements(thymioController):
-    thymioController.set_speed(0, 0)
-    time.sleep(2)
-    thymioController.set_speed(1, 0)
-    time.sleep(2)
-    thymioController.set_speed(0, 1)
-    time.sleep(2)
-    thymioController.set_speed(-2, -2)
-    time.sleep(2)
+    l = int(input('l_speed :'))
+    r = int(input('r_speed :'))
+    thymioController.set_speed(l, r)
+    time.sleep(5)
     thymioController.set_speed(0, 0)
 
 def writeCsv(data, name='DataThymioSensorsReading.csv'):
@@ -86,12 +82,14 @@ if __name__ == '__main__':
     # check command-line arguments
     # create and run controller
     thymioController = Thymio()
-    #test_colors(thymioController)
-    #test_movements(thymioController)
+    test_colors(thymioController)
+    thymioController.set_colour('red')
+    for i in range(10):
+        test_movements(thymioController)
     #for i in range(1):
     #    test_colors(thymioController)
     #test_movements(thymioController)
-    test_sensors(thymioController)
+    #test_sensors(thymioController)
     #while True:
      #   time.sleep(1)
      #   print(np.array(thymioController.get_sensor_values()[0]))

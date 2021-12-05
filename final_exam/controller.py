@@ -91,15 +91,18 @@ class controller(input_output,):
 		# here comes the wheel input based on the genes
 		# TODO: for now we just send random wheel speeds
 		decision_input = self.build_input()
+		with open('test/sensor.txt','a') as f:
+			f.writelines([str(decision_input)])
 
 		d = self.build_input(30)
 		l_sp, r_sp = self.NN.forward_propagation(d)
+		print(l_sp, r_sp)
 
-		self.set_speed(l_sp *50, r_sp*50)
+		self.set_speed(l_sp *50 * (48/50), r_sp*50)
 
 	def run(self):
 		count = 0
-		while self.active and count < 2000:
+		while self.active and count < 100:
 			count+=1
 			print(count)
 			self.mainloop()
@@ -139,7 +142,7 @@ class controller(input_output,):
 			output.append(0)
 			output.append(1)
 		else:
-			output.append(0)
+			output.append(1)
 			output.append(0)
 		return output
 
