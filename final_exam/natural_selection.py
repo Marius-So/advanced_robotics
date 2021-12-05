@@ -22,14 +22,15 @@ class learn:
 		self.best_avoider_genes = [self.avoider_genes, -9999]
 
 	def learn(self, how_much_time):
-		for simulation in range(1, 1001):
+		offset = 0
+		for simulation in range(1, 999999):
 			print(simulation)
-			if simulation % 2 == 0:
+			if True or simulation % 2 == 0:
 				self.seeker_genes = np.copy(self.best_seeker_genes[0])
 				if simulation > 1:
 					print("evolve seeker")
 					for i in range(80):
-						self.seeker_genes[randint(0, self.s_genes - 1)] = random()
+						self.seeker_genes[(offset + i) % self.s_genes] = random()
 				self.seeker_nn = NN(self.seeker_genes, self.s_input, 10, 10)
 				self.avoider_nn = NN(self.best_avoider_genes[0], self.s_input,10,10)
 			else:
@@ -37,10 +38,14 @@ class learn:
 				if simulation > 1:
 					print("evolve avoider")
 					for i in range(80):
-						self.avoider_genes[randint(0, self.s_genes - 1)] = random()
+						self.avoider_genes[(offset + i) % self.s_genes] = random()
 				self.seeker_nn = NN(self.best_seeker_genes[0], self.s_input, 10, 10)
 				self.avoider_nn = NN(self.avoider_genes, self.s_input, 10, 10)
-			self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[-0.4,-0.4,5]], [[0.4, 0.4, 4]]], ["red", "blue", "blue"])
+			offset += 80
+			if simulation % 200 > 99:
+				self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[0.7,-0.6,5]], [[-0.7, 0.6, 4]]], ["red", "blue", "blue"])
+			else:
+				self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[-0.7,-0.6,5]], [[0.7, 0.6, 4]]], ["red", "blue", "blue"])
 			for i in range(how_much_time):
 				a = self.simulator.lidar_sensor(0)
 				b = [self.simulator.camera(0, "red", nbin), self.simulator.camera(0, "yelow", nbin), self.simulator.camera(0, "blue", nbin), self.simulator.camera(0, "green", nbin), self.simulator.camera(0, "purple", nbin)]
@@ -57,10 +62,10 @@ class learn:
 				c = self.simulator.ground_sensor(2)
 				d = build_input(a,b,c, 30)
 				speed3 = self.avoider_nn.forward_propagation(d)
-				self.simulator.simulate([speed1, speed2, speed3], 0.5)
+				self.simulator.simulate([speed1, [0,0], [0,0]], 0.5)
 			del self.seeker_nn
 			del self.avoider_nn
-			if simulation % 2 == 0:
+			if True or simulation % 2 == 0:
 				if self.simulator.fitness[0] >= self.best_seeker_genes[1]:
 					print("save seeker")
 					self.best_seeker_genes = [np.copy(self.seeker_genes), self.simulator.fitness[0]]
@@ -84,10 +89,10 @@ def build_input(lidar_output, camera_output, ground, ds=10):
 			m = float('inf')
 			if lidar_output[j] != 999999999:
 				m = lidar_output[j]
-		if m == float('inf'):
+		if m == float('inf') or m > 1999:
 			output.append(0)
 		else:
-			output.append(1 - m/1000)
+			output.append(1 - m/2000)
 	for i in camera_output:
 		for j in i:
 			output.append(j)
@@ -97,4 +102,4 @@ def build_input(lidar_output, camera_output, ground, ds=10):
 
 if __name__ == "__main__":
 	a = learn()
-	a.learn(120)	
+	a.learn(20)	
