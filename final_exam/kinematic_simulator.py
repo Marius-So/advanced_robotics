@@ -232,7 +232,7 @@ class kinematic_simulator:
 			for i in range(len(instructions)):
 				self.step(self.robots[i], instructions[i])
 				if self.robots[i][-1][0] < -0.75 or self.robots[i][-1][0] > 0.75 or self.robots[i][-1][1] < -1 or self.robots[i][-1][1] > 1:
-					self.fitness[i] -= 5
+					self.fitness[i] -= 1
 				if self.robots[i][-1][0] < 0.1 and self.robots[i][-1][0] > -0.1 and self.robots[i][-1][1] < 0.1 and self.robots[i][-1][1] > -0.1:
 					if self.colors[i] == "blue":
 						self.colors[i] = "green"
@@ -245,7 +245,7 @@ class kinematic_simulator:
 			if self.colors[i] == "red":
 				for j in range(len(self.robots)):
 					if self.colors[j] == "blue":
-						if ((self.robots[i][-1][0] - self.robots[j][-1][0])**2 + (self.robots[i][-1][1] - self.robots[j][-1][1])**2)**0.5 < 0.1:
+						if ((self.robots[i][-1][0] - self.robots[j][-1][0])**2 + (self.robots[i][-1][1] - self.robots[j][-1][1])**2)**0.5 < 0.2:
 							#self.robots[j][-1][1] = -20000
 							self.colors[j] = "orange"
 
@@ -254,9 +254,10 @@ class kinematic_simulator:
 			d = ((self.robots[i][-1][0] - self.robots[0][-1][0])**2 + (self.robots[i][-1][1] - self.robots[0][-1][1])**2)**0.5
 			if self.colors[i] == "blue" or self.colors[i] == "green":
 				self.fitness[0] += 1/(d*d)
+				self.fitness[i] += d
 			else:
 				self.fitness[0] += 10
-			self.fitness[i] += d
+				self.fitness[i] -= 1
 
 if __name__ == "__main__":
 	import matplotlib.pyplot as plt
