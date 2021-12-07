@@ -40,7 +40,7 @@ class controller(input_output,):
 				self.active = False
 
 			# TODO: fix these values for the save zone
-			if 200 < ground_reflected[0] < 500:
+			if 200 < ground_reflected[1] < 700:
 				self.set_colour('green')
 				self.cur_colour = 'green'
 				self.send_code(3)
@@ -63,7 +63,7 @@ class controller(input_output,):
 
 		# behavior when seeker
 		else:
-			if 200 < ground_reflected[0] < 500:
+			if 200 < ground_reflected[1] < 700:
 				self.set_colour('orange')
 				self.cur_colour = 'orange'
 
@@ -90,13 +90,21 @@ class controller(input_output,):
 		# TODO: for now we just send random wheel speeds
 		decision_input = self.build_input()
 		with open('test/sensor.txt','a') as f:
-			f.writelines([str(decision_input)])
+			f.writelines([str(np.round(decision_input,3)) + "\n"])
 
+		self.set_speed(0,0)
+		sleep(0.2)
 		d = self.build_input(30)
+		#a = [0 for i in range(39)]
+		#a[0] = 0.7
+		#a[-14]= 1
 		l_sp, r_sp = self.NN.forward_propagation(d)
 		print(l_sp, r_sp)
 
-		self.set_speed(l_sp *50 * (48/50), r_sp*50)
+		speed_factor = 20
+
+		self.set_speed(l_sp *speed_factor * (48/50), r_sp*speed_factor)
+		sleep(1)
 
 	def run(self):
 		count = 0
@@ -121,9 +129,10 @@ class controller(input_output,):
 		for i in range(0, 360, ds):
 			for j in range(i, i + ds):
 				m = float('inf')
-				if time() - lidar_output[(j + 180)%360][1] < 1 and lidar_output[(j + 180)%360][0] < m:
+				if time() - lidar_output[(j + 180)%360][1] < 2 and lidar_output[(j + 180)%360][0] < m:
 					m = lidar_output[(j + 180)%360][0]
-			if m == float('inf') or m > 1999:
+					# TODO: hard codedthreshold
+			if m == float('inf') or m > 1999 or (1 - m/2000) < 0.5:
 				output.append(0)
 			else:
 				output.append(1 - m/2000)
@@ -132,23 +141,23 @@ class controller(input_output,):
 				output.append(j)
 
 			# TODO remove hard code
-		if ground_reflected[0]>800:
+		if ground_reflected[1]>700:
 			output.append(0)
 			output.append(0)
-		elif ground_reflected[0]>300:
+		elif ground_reflected[1]>200:
 			# hard coded safe zone
 			output.append(0)
 			output.append(1)
 		else:
 			#TODO: hard code for testing on black floor
-			output.append(0)
+			output.append(1)
 			output.append(0)
 		return output
 
 if __name__ == "__main__":
 	try:
 		genes = np.loadtxt('seeker.txt', delimiter=', ')
-		robot = controller(genes=genes)
+		robot = controller(avoider=False, genes=genes)
 		robot.run()
 	except KeyboardInterrupt:
 		robot.set_speed(0,0)
