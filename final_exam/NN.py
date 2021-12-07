@@ -1,6 +1,6 @@
 import numpy as np
 
-speed = [-10, -5, 0, 5, 10]
+speed = [-10, -7.5, 0, 7.5, 10]
 
 class NN():
     def __init__(self, genes, input_neurons, hidden_neurons, output_neurons):

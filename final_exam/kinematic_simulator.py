@@ -264,7 +264,7 @@ if __name__ == "__main__":
 	h = 1
 	w = 1
 	walls = []
-	simulator = kinematic_simulator(walls, [[[-0.4,0,0]], [[0.4,0,3.14]]], ["red", "blue"])
+	simulator = kinematic_simulator(walls, [[[0,0,0.785]], [[0.5,0.4,0]]], ["red", "blue"])
 	a = simulator.lidar_sensor(0)
 	for i in range(len(a)):
             if a[i] != 999999999:
@@ -272,5 +272,5 @@ if __name__ == "__main__":
 	print(simulator.camera(0, "blue", 8))
 	print(simulator.camera(0, "red", 8))
 	plt.show()
-	simulator.simulate([[3, 3], [3, 3]], 5)
+	simulator.simulate([[0, 0], [0, 0]], 5)
 	simulator.save()

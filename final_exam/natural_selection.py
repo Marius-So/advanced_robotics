@@ -26,7 +26,7 @@ class learn:
 		offset = 0
 		for simulation in range(1, 999999):
 			print(simulation)
-			if simulation % 200 > 99:
+			if simulation % 200 < 100:
 				self.seeker_genes = np.copy(self.best_seeker_genes[0])
 				if simulation > 1:
 					print("evolve seeker")
@@ -72,10 +72,10 @@ class learn:
 					c = self.simulator.ground_sensor(2)
 					d = build_input(a,b,c, 30)
 					speed3 = self.avoider_nn.forward_propagation(d)
-					self.simulator.simulate([speed1,speed2, speed3], 0.5)
+					self.simulator.simulate([speed1,[0,0], [0,0]], 0.5)
 				for i in range(len(self.simulator.fitness)):
 					score[i] += self.simulator.fitness[i]
-			if  simulation % 200 > 99:
+			if  simulation % 200 < 100:
 				if score[0] >= self.best_seeker_genes[1]:
 					print("save seeker")
 					self.best_seeker_genes = [np.copy(self.seeker_genes), score[0]]
@@ -115,4 +115,4 @@ def build_input(lidar_output, camera_output, ground, ds=10):
 
 if __name__ == "__main__":
 	a = learn()
-	a.learn(120)	
+	a.learn(80)	
