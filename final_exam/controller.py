@@ -92,7 +92,7 @@ class controller(input_output,):
 
                 #
 		self.set_speed(0,0)
-		sleep(0.15)
+		sleep(0.3)
 		d = self.build_input(30)
 
 		with open('test/sensor.txt','a') as f:
@@ -102,10 +102,9 @@ class controller(input_output,):
 		#a[-14]= 1
 
 		l_sp, r_sp = self.NN.forward_propagation(d)
-		speed_factor = 25
+		speed_factor = 10
 		self.set_speed(l_sp *speed_factor * (48/50), r_sp*speed_factor)
-		sleep(1)
-
+		sleep(0.5)
 
 	def run(self):
 		count = 0
@@ -147,11 +146,11 @@ class controller(input_output,):
 			output.append(0)
 		elif ground_reflected[1]>200:
 			# hard coded safe zone
-			output.append(0)
+			output.append(1)
 			output.append(0)
 		else:
 			#TODO: hard code for testing on black floor
-			output.append(0)
+			output.append(1)
 			output.append(0)
 		return output
 
