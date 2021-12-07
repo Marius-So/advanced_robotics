@@ -92,9 +92,7 @@ class controller(input_output,):
 
                 #
 		self.set_speed(0,0)
-		sleep(0.2)
-		s = time.time()
-		print(np.round(s,2))
+		sleep(0.15)
 		d = self.build_input(30)
 
 		with open('test/sensor.txt','a') as f:
@@ -102,13 +100,12 @@ class controller(input_output,):
 		#a = [0 for i in range(39)]
 		#a[0] = 0.7
 		#a[-14]= 1
+
 		l_sp, r_sp = self.NN.forward_propagation(d)
-		print(np.round(time.time()-s,2))
-
 		speed_factor = 25
-
 		self.set_speed(l_sp *speed_factor * (48/50), r_sp*speed_factor)
-		sleep(0.5)
+		sleep(1)
+
 
 	def run(self):
 		count = 0
@@ -121,7 +118,7 @@ class controller(input_output,):
 		self.active = False
 
 	def get_camera_output(self):
-		picture = self.take_picture()
+		picture = self.picture
 		colour_masks = analyse_for_colours(picture)
 		return get_all_detections(colour_masks, bins=5)
 
@@ -151,10 +148,10 @@ class controller(input_output,):
 		elif ground_reflected[1]>200:
 			# hard coded safe zone
 			output.append(0)
-			output.append(1)
+			output.append(0)
 		else:
 			#TODO: hard code for testing on black floor
-			output.append(1)
+			output.append(0)
 			output.append(0)
 		return output
 

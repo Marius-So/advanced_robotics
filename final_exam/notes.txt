@@ -1,1 +1,3 @@
 - problems with old lidar input
+- so we seee that only few lidar inputs determine where the robot is moving towards
+- idea we try to mask the
