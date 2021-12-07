@@ -88,24 +88,23 @@ class controller(input_output,):
 
 		# here comes the wheel input based on the genes
 		# TODO: for now we just send random wheel speeds
-
-
-                #
-		self.set_speed(0,0)
-		sleep(0.15)
-		d = self.build_input(30)
-
+		decision_input = self.build_input()
 		with open('test/sensor.txt','a') as f:
-			f.writelines([str(np.round(d,3)) + "\n"])
+			f.writelines([str(np.round(decision_input,3)) + "\n"])
+
+		self.set_speed(0,0)
+		sleep(0.2)
+		d = self.build_input(30)
 		#a = [0 for i in range(39)]
 		#a[0] = 0.7
 		#a[-14]= 1
-
 		l_sp, r_sp = self.NN.forward_propagation(d)
-		speed_factor = 25
+		print(l_sp, r_sp)
+
+		speed_factor = 20
+
 		self.set_speed(l_sp *speed_factor * (48/50), r_sp*speed_factor)
 		sleep(1)
-
 
 	def run(self):
 		count = 0
@@ -118,7 +117,7 @@ class controller(input_output,):
 		self.active = False
 
 	def get_camera_output(self):
-		picture = self.picture
+		picture = self.take_picture()
 		colour_masks = analyse_for_colours(picture)
 		return get_all_detections(colour_masks, bins=5)
 
@@ -130,7 +129,7 @@ class controller(input_output,):
 		for i in range(0, 360, ds):
 			for j in range(i, i + ds):
 				m = float('inf')
-				if time() - lidar_output[(j + 180)%360][1] < 0.4 and lidar_output[(j + 180)%360][0] < m:
+				if time() - lidar_output[(j + 180)%360][1] < 0.5 and lidar_output[(j + 180)%360][0] < m:
 					m = lidar_output[(j + 180)%360][0]
 					# TODO: hard codedthreshold
 			if m == float('inf') or m > 1999 or (1 - m/2000) < 0.5:
@@ -148,10 +147,10 @@ class controller(input_output,):
 		elif ground_reflected[1]>200:
 			# hard coded safe zone
 			output.append(0)
-			output.append(0)
+			output.append(1)
 		else:
 			#TODO: hard code for testing on black floor
-			output.append(0)
+			output.append(1)
 			output.append(0)
 		return output
 

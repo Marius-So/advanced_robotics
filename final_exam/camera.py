@@ -11,14 +11,27 @@ class camera():
         self.camera.resolution = (224, 176)
         self.camera.framerate = 24
         self.picture = np.empty((176, 224, 3), dtype=np.uint8)
+        camera_thread = Thread(target=self.camera_sensing)
+        camera_thread_daemon = True
+        camera_thread.start()
 
-    def take_picture(self):
-        self.camera.capture(self.picture, 'rgb')
-        return np.flip(np.flip(self.picture, 0),1)
+    def camera_sensing(self):
+        while True:
+            try:
+                temp_img = np.empty((176, 224, 3), dtype=np.uint8)
+                self.camera.capture(temp_img, 'rgb')
+                self.picture = np.flip(np.flip(self.picture, 0),1)
+                self.picture = temp_img
+            except Exception as e:
+                print(e)
+                sleep(2)
+                pass
+
 
     def __del__(self):
         self.camera.stop_preview()
         self.camera.close()
+
 
 if __name__ == "__main__":
     a = camera()

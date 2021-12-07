@@ -25,7 +25,8 @@ def test_camera_detection(robot):
             img_2 = Image.fromarray(img_2)
             im.save(f"test/camera_test_{count}.jpg")
             img_2.save(f"test/detection_test_{count}.jpg")
-
+            with open('test/camera_output.txt','a') as f:
+                f.writelines([f"camera_test_{count}" + str(get_camera_output(robot)) + "\n"])
             print(get_camera_output(robot))
 
 
