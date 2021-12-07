@@ -26,7 +26,7 @@ class learn:
 		offset = 0
 		for simulation in range(1, 999999):
 			print(simulation)
-			if False and simulation % 200 > 99:
+			if simulation % 200 < 100:
 				self.seeker_genes = np.copy(self.best_seeker_genes[0])
 				if simulation > 1:
 					print("evolve seeker")
@@ -48,13 +48,20 @@ class learn:
 				if start == 0:
 					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[0.6,-0.6,5]], [[-0.6, 0.6, 4]]], ["red", "blue", "blue"])
 				else:
-					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[-0.21,-0.21,5]], [[0.21, 0.21, 4]]], ["red", "blue", "blue"])
+					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[-0.6,-0.6,5]], [[0.6, 0.6, 4]]], ["red", "blue", "blue"])
 				for i in range(how_much_time):
 					a = self.simulator.lidar_sensor(0)
 					b = [self.simulator.camera(0, "red", nbin), self.simulator.camera(0, "yelow", nbin), self.simulator.camera(0, "blue", nbin), self.simulator.camera(0, "green", nbin), self.simulator.camera(0, "purple", nbin)]
 					c = self.simulator.ground_sensor(0)
 					d = build_input(a,b,c, 30)
+					#d = [0 for i in range (39)]
+					#d[0] = 0.7
+					#d[-1] = 1
+					#d[-14] = 1
 					speed1 = self.seeker_nn.forward_propagation(d)
+					#if speed1 != [10, -10] and speed1 != [-10, 10]:
+					#	print(speed1)
+				#		print(d)
 					a = self.simulator.lidar_sensor(1)
 					b = [self.simulator.camera(1, "red", nbin), self.simulator.camera(1, "yelow", nbin), self.simulator.camera(1, "blue", nbin), self.simulator.camera(1, "green", nbin), self.simulator.camera(1, "purple", nbin)]
 					c = self.simulator.ground_sensor(1)
@@ -68,7 +75,7 @@ class learn:
 					self.simulator.simulate([speed1,speed2, speed3], 0.5)
 				for i in range(len(self.simulator.fitness)):
 					score[i] += self.simulator.fitness[i]
-			if False and simulation % 100 > 99:
+			if  simulation % 100 < 100:
 				if score[0] >= self.best_seeker_genes[1]:
 					print("save seeker")
 					self.best_seeker_genes = [np.copy(self.seeker_genes), score[0]]
