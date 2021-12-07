@@ -26,7 +26,7 @@ class learn:
 		offset = 0
 		for simulation in range(1, 999999):
 			print(simulation)
-			if simulation % 200 < 100:
+			if simulation % 200 > 99:
 				self.seeker_genes = np.copy(self.best_seeker_genes[0])
 				if simulation > 1:
 					print("evolve seeker")
@@ -75,7 +75,7 @@ class learn:
 					self.simulator.simulate([speed1,speed2, speed3], 0.5)
 				for i in range(len(self.simulator.fitness)):
 					score[i] += self.simulator.fitness[i]
-			if  simulation % 100 < 100:
+			if  simulation % 200 > 99:
 				if score[0] >= self.best_seeker_genes[1]:
 					print("save seeker")
 					self.best_seeker_genes = [np.copy(self.seeker_genes), score[0]]
