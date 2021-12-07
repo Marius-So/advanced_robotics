@@ -25,9 +25,6 @@ class controller(input_output,):
 			self.set_colour('red')
 			self.cur_colour = 'red'
 			self.transmission_code = 1
-		# then we create the feed forward network based on the genes
-		# TODO: create nn based on the genes
-		self.NN = NN(genes, input_neurons=39, hidden_neurons=10, output_neurons=10)
 
 	def mainloop(self):
 		# update sensor values
@@ -66,45 +63,73 @@ class controller(input_output,):
 			if 200 < ground_reflected[1] < 700:
 				self.set_colour('orange')
 				self.cur_colour = 'orange'
+				self.transmission_code == 3
 
 			elif self.cur_colour != 'red':
 				self.set_colour('red')
 				self.cur_colour = 'red'
+				self.transmission_code == 1
 
-		# avoid the black tape
-		# if ground_reflected[0] < 200:
-		# 	if np.random.random() < 0.5:
-		# 		l = - left_speed
-		# 		r = 0
-		# 	else:
-		# 		l = 0
-		# 		r = - right_speed
-		# 	self.set_speed(l,r)
+			self.send_code(self.transmission_code)
 
-		#	while ground_reflected[0] < 200:
-		#		prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
-		#		sleep(0.5)
-		self.send_code(self.transmission_code)
+		# avoid the black tape we avoid the tape either way
+		if ground_reflected[1] < 300:
+			self.set_speed(-400,-400)
+			sleep(1)
+			if np.random.random() < 0.5:
+				self.set_speed(-400,400)
+			else:
+				self.set_speed(400,-400)
+			sleep(0.7)
+			print('did theses moves')
+
+		self.set_speed(0,0)
+		l,r = self.get_behavioral_moves()
+		self.set_speed(l,r)
+		sleep(2)
+		#while ground_reflected[0] < 200:
+		#	prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
+		#	sleep(0.5)
+
 
 		# here comes the wheel input based on the genes
 		# TODO: for now we just send random wheel speeds
-		decision_input = self.build_input()
-		with open('test/sensor.txt','a') as f:
-			f.writelines([str(np.round(decision_input,3)) + "\n"])
 
-		self.set_speed(0,0)
-		sleep(0.2)
-		d = self.build_input(30)
-		#a = [0 for i in range(39)]
-		#a[0] = 0.7
-		#a[-14]= 1
-		l_sp, r_sp = self.NN.forward_propagation(d)
-		print(l_sp, r_sp)
+		# TODO: now speed comes form behavioral funtion based on inputs
+		#self.set_speed(l_sp *speed_factor * (48/50), r_sp*speed_factor)
+		sleep(10)
 
-		speed_factor = 20
+	def get_behavioral_moves(self):
+		sensing = self.build_input(20)
+		lidar = sensing[:20]
+		sensing = sensing[20:]
+		camera_obs = sensing[:25]
+		if self.avoider:
+			# when he sees red
+			if sum(camera_obs[:5])> 1:
+				return -200, -200
+				# if he sees green
+			if sum(camera_obs[17:18])>1:
+				return 200, 200
 
-		self.set_speed(l_sp *speed_factor * (48/50), r_sp*speed_factor)
-		sleep(1)
+			if max(lidar[16:-5]) > 0.7:
+				return 400, 400
+
+			if max(lidar[5:16]) > 0.7:
+				if np.random.random() > 0.5:
+					return -150, -200
+				else:
+					return -200, -150
+			else:
+				if np.random.random() > 0.5:
+					200, 100
+
+		else:
+			if sum(camera_obs[10:15])> 1:
+				return 500, 500
+			else:
+				return 200, 300
+			# er are seeker
 
 	def run(self):
 		count = 0
@@ -117,7 +142,7 @@ class controller(input_output,):
 		self.active = False
 
 	def get_camera_output(self):
-		picture = self.take_picture()
+		picture = self.picture
 		colour_masks = analyse_for_colours(picture)
 		return get_all_detections(colour_masks, bins=5)
 
@@ -156,8 +181,7 @@ class controller(input_output,):
 
 if __name__ == "__main__":
 	try:
-		genes = np.loadtxt('seeker.txt', delimiter=', ')
-		robot = controller(avoider=False, genes=genes)
+		robot = controller(avoider=False)
 		robot.run()
 	except KeyboardInterrupt:
 		robot.set_speed(0,0)
