@@ -3,6 +3,7 @@ import numpy as np
 from kinematic_simulator import kinematic_simulator
 from random import randint, random
 import os
+from datetime import datetime
 
 nbin = 5
 
@@ -25,7 +26,7 @@ class learn:
 		offset = 0
 		for simulation in range(1, 999999):
 			print(simulation)
-			if True or simulation % 2 == 0:
+			if False and simulation % 200 > 99:
 				self.seeker_genes = np.copy(self.best_seeker_genes[0])
 				if simulation > 1:
 					print("evolve seeker")
@@ -45,9 +46,9 @@ class learn:
 			score = [0] * 3
 			for start in range(2):
 				if start == 0:
-					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[0.7,-0.6,5]], [[-0.7, 0.6, 4]]], ["red", "blue", "blue"])
+					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[0.6,-0.6,5]], [[-0.6, 0.6, 4]]], ["red", "blue", "blue"])
 				else:
-					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[-0.7,-0.6,5]], [[0.7, 0.6, 4]]], ["red", "blue", "blue"])
+					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[-0.21,-0.21,5]], [[0.21, 0.21, 4]]], ["red", "blue", "blue"])
 				for i in range(how_much_time):
 					a = self.simulator.lidar_sensor(0)
 					b = [self.simulator.camera(0, "red", nbin), self.simulator.camera(0, "yelow", nbin), self.simulator.camera(0, "blue", nbin), self.simulator.camera(0, "green", nbin), self.simulator.camera(0, "purple", nbin)]
@@ -67,12 +68,14 @@ class learn:
 					self.simulator.simulate([speed1,speed2, speed3], 0.5)
 				for i in range(len(self.simulator.fitness)):
 					score[i] += self.simulator.fitness[i]
-			if True or simulation % 2 == 0:
+			if False and simulation % 100 > 99:
 				if score[0] >= self.best_seeker_genes[1]:
 					print("save seeker")
 					self.best_seeker_genes = [np.copy(self.seeker_genes), score[0]]
 					self.best_avoider_genes[1] = 0.5*score[1] + 0.5*score[2]
 					np.savetxt("seeker.txt", [self.best_seeker_genes[0]], delimiter=", ")
+					name = "genes_archives/seeker" + datetime.today().strftime('%y-%m-%d-%H-%M-%s') + ".txt"
+					np.savetxt(name, [self.best_seeker_genes[0]], delimiter=", ")
 					self.simulator.save()
 			else:
 				if score[1] + score[2] >= 2*self.best_avoider_genes[1]:
@@ -80,6 +83,8 @@ class learn:
 					self.best_avoider_genes = [np.copy(self.avoider_genes), 0.5*score[1] + 0.5*score[2]]
 					self.best_seeker_genes[1] = score[0]
 					np.savetxt("avoider.txt", [self.best_avoider_genes[0]], delimiter=", ")
+					name = "genes_archives/avoider" + datetime.today().strftime('%y-%m-%d-%H-%M-%s') + ".txt"
+					np.savetxt(name, [self.best_avoider_genes[0]], delimiter=", ")
 					self.simulator.save()
 			print(score)
 
@@ -103,4 +108,4 @@ def build_input(lidar_output, camera_output, ground, ds=10):
 
 if __name__ == "__main__":
 	a = learn()
-	a.learn(60)	
+	a.learn(120)	
