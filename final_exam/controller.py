@@ -61,7 +61,6 @@ class controller(input_output,):
 			if self.transmission_code == 3 and time() > self.locked_sender:
 				self.transmission_code == 2
 
-
 		# behavior when seeker
 		else:
 			if 200 < ground_reflected[0] < 500:
@@ -85,7 +84,6 @@ class controller(input_output,):
 		#	while ground_reflected[0] < 200:
 		#		prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
 		#		sleep(0.5)
-
 		self.send_code(self.transmission_code)
 
 		# here comes the wheel input based on the genes
@@ -134,10 +132,10 @@ class controller(input_output,):
 				output.append(j)
 
 			# TODO remove hard code
-		if ground_reflected[0]>500:
+		if ground_reflected[0]>800:
 			output.append(0)
 			output.append(0)
-		elif ground_reflected[0]>200:
+		elif ground_reflected[0]>300:
 			# hard coded safe zone
 			output.append(0)
 			output.append(1)
@@ -148,6 +146,10 @@ class controller(input_output,):
 		return output
 
 if __name__ == "__main__":
-	genes = np.loadtxt('avoider.txt', delimiter=', ')
-	robot = controller(genes=genes)
-	robot.run()
+	try:
+		genes = np.loadtxt('seeker.txt', delimiter=', ')
+		robot = controller(genes=genes)
+		robot.run()
+	except KeyboardInterrupt:
+		robot.set_speed(0,0)
+		robot.set_colour('red')
