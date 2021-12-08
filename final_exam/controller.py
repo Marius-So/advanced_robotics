@@ -34,7 +34,8 @@ class controller(input_output,):
 		prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
 		# behavior when avoider
 		if self.avoider:
-			if rx == 1:
+			if rx == 1 and self.cur_colour == 'blue':#
+				self.cur_colour == 'purple'
 				self.set_colour('purple')
 				self.set_speed(0,0)
 				self.active = False
@@ -51,7 +52,7 @@ class controller(input_output,):
 
 			if self.cur_colour == 'green' and rx == 2:
 				# we need to speed out of the safe zone
-				self.set_speed(100,100)
+				self.set_speed(300, 300)
 				self.locked_sender = time() + 5
 				# TODO stop transmitting
 				self.transmission_code = 3
@@ -60,6 +61,7 @@ class controller(input_output,):
 
 			if self.transmission_code == 3 and time() > self.locked_sender:
 				self.transmission_code == 2
+				self.send_code(self.transmission_code)
 
 		# behavior when seeker
 		else:

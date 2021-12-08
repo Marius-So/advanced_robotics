@@ -1,4 +1,5 @@
 from os import name
+from typing import Iterator
 from hardware import input_output
 import numpy as np
 from time import sleep, time
@@ -14,12 +15,14 @@ class controller(input_output,):
 		self.active = True
 		self.avoider = avoider
 		self.locked_sender = time()
-
+		self.lock_time = time()
+		self.action_list = []
 
 		if self.avoider:
 			self.set_colour('blue')
 			self.cur_colour = 'blue'
 			self.transmission_code = 2
+			self.must_leave = False
 
 		else:
 			self.set_colour('red')
@@ -41,6 +44,8 @@ class controller(input_output,):
 				self.set_colour('green')
 				self.cur_colour = 'green'
 				self.send_code(3)
+				self.set_speed(0,0)
+				self.lock_time = time()
 
 			elif self.cur_colour != 'blue':
 				self.set_colour('blue')
@@ -48,15 +53,16 @@ class controller(input_output,):
 
 			if self.cur_colour == 'green' and rx == 2:
 				# we need to speed out of the safe zone
-				self.set_speed(100,100)
-				self.locked_sender = time() + 5
-				# TODO stop transmitting
+				#TODO: do leave save zone behavior
+				self.must_leave = True
+				self.lock_time = time()
 				self.transmission_code = 3
+				self.locked_sender = time() + 5
 				self.send_code(self.transmission_code)
-				sleep(2)
 
 			if self.transmission_code == 3 and time() > self.locked_sender:
 				self.transmission_code == 2
+				self.send_code(self.transmission_code)
 
 		# behavior when seeker
 		else:
@@ -64,11 +70,13 @@ class controller(input_output,):
 				self.set_colour('orange')
 				self.cur_colour = 'orange'
 				self.transmission_code == 3
+				self.lock_time = time()
 
 			elif self.cur_colour != 'red':
 				self.set_colour('red')
 				self.cur_colour = 'red'
 				self.transmission_code == 1
+				self.lock_time = time()
 
 			self.send_code(self.transmission_code)
 
@@ -82,53 +90,90 @@ class controller(input_output,):
 				self.set_speed(400,-400)
 			sleep(0.7)
 			print('did theses moves')
+			self.lock_time = time()
 
 		self.set_speed(0,0)
-		l,r = self.get_behavioral_moves()
-		self.set_speed(l,r)
-		sleep(2)
-		#while ground_reflected[0] < 200:
-		#	prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
-		#	sleep(0.5)
 
+		if self.lock_time < time():
+			if len(self.action_list) == 0:
+				self.action_list = self.get_behavioral_moves()
 
-		# here comes the wheel input based on the genes
-		# TODO: for now we just send random wheel speeds
+			left_speed, right_speed, exec_sec  = self.action_list[0]
+			self.lock_time = time() + exec_sec
+			self.action_list = self.action_list[1:]
 
-		# TODO: now speed comes form behavioral funtion based on inputs
-		#self.set_speed(l_sp *speed_factor * (48/50), r_sp*speed_factor)
-		sleep(10)
+			self.set_speed(left_speed * (48/50), right_speed)
+
 
 	def get_behavioral_moves(self):
-		sensing = self.build_input(20)
-		lidar = sensing[:20]
-		sensing = sensing[20:]
-		camera_obs = sensing[:25]
+		observation = self.build_input(20)
+
+		lidar = observation[:20]
+		camera_obs = observation[20:45]
+
 		if self.avoider:
+			if self.must_leave:
+				if sum(camera_obs[:5])>= 1:
+					return (-300,-300,2)
+				else:
+					return (300, 300, 2)
 			# when he sees red
-			if sum(camera_obs[:5])> 1:
-				return -200, -200
+			if sum(camera_obs[:5])>= 1:
+				x = -300
+				y = -100
+				for idx, e in enumerate(camera_obs[:5]):
+					if e == 1:
+						if idx < 3:
+							return (x,y - (100 * idx), 1)
+						else:
+							return (x + ((idx-2)*100), x, 1)
+
 				# if he sees green
 			if sum(camera_obs[17:18])>1:
-				return 200, 200
+				x = 300
+				y = 100
+				for idx, e in enumerate(camera_obs[:5]):
+					if e == 1:
+						if idx < 3:
+							return (y + (100 * idx), x, 1)
+						else:
+							return (x, x - ((idx-2) * 100), 1)
 
 			if max(lidar[16:-5]) > 0.7:
-				return 400, 400
+				return (400, 400, 1)
 
 			if max(lidar[5:16]) > 0.7:
 				if np.random.random() > 0.5:
-					return -150, -200
+					return (-150, -200, 1)
 				else:
-					return -200, -150
+					return (-200, -150, 1)
+
 			else:
 				if np.random.random() > 0.5:
-					200, 100
+					(200, 100, 1)
+				else:
+					(100, 200, 1)
 
+		# HERE comes the Seeker
 		else:
 			if sum(camera_obs[10:15])> 1:
-				return 500, 500
+				x = 400
+				y = 200
+				for idx, e in enumerate(camera_obs[10:15]):
+					if e == 1:
+						if idx < 3:
+							return (y + (100 * idx), x, 1)
+						else:
+							return (x, x - ((idx-2) * 100), 1)
+
+			if max(lidar[8:12]) > 0.7:
+				return (-300, -300, 1)
+
 			else:
-				return 200, 300
+				if np.random.random() > 0.5:
+					(400, 0, 1)
+				else:
+					(0, 400, 1)
 			# er are seeker
 
 	def run(self):
