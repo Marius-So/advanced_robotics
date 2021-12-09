@@ -102,7 +102,7 @@ class controller(input_output,):
         if self.lock_time < time():
             if len(self.action_list) == 0:
                 observation = self.build_input(20)
-                self.action_list = get_behavioral_moves()
+                self.action_list = get_behavioral_moves(observation)
 
             left_speed, right_speed, exec_sec  = self.action_list[0]
             self.lock_time = time() + exec_sec
