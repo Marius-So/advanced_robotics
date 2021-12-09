@@ -24,8 +24,8 @@ class learn:
 			self.avoider_genes = np.loadtxt("avoider.txt", delimiter=", ")
 		else:
 			self.avoider_genes = np.random.random(self.s_genes)
-		self.best_seeker_genes = [self.seeker_genes, -9999]
-		self.best_avoider_genes = [self.avoider_genes, -9999]
+		self.best_seeker_genes = [self.seeker_genes, -99999]
+		self.best_avoider_genes = [self.avoider_genes, -99999]
 
 	def learn(self, how_much_time):
 		for simulation in range(1, 999999):
@@ -67,12 +67,12 @@ class learn:
 					b = [self.simulator.camera(1, "red", nbin), self.simulator.camera(1, "yelow", nbin), self.simulator.camera(1, "blue", nbin), self.simulator.camera(1, "green", nbin), self.simulator.camera(1, "purple", nbin)]
 					c = self.simulator.ground_sensor(1)
 					d = build_input(a,b,c, 20)
-					speed2 = get_behavioural_moves(d)
+					speed2 = get_simu_behaviour(d)
 					a = self.simulator.lidar_sensor(2)
 					b = [self.simulator.camera(2, "red", nbin), self.simulator.camera(2, "yelow", nbin), self.simulator.camera(2, "blue", nbin), self.simulator.camera(2, "green", nbin), self.simulator.camera(2, "purple", nbin)]
 					c = self.simulator.ground_sensor(2)
 					d = build_input(a,b,c, 20)
-					speed3 = get_behavioural_moves(d)
+					speed3 = get_simu_behaviour(d)
 					self.simulator.simulate([speed1, speed2, speed3], 0.5)
 				for i in range(len(self.simulator.fitness)):
 					score[i] += self.simulator.fitness[i]
