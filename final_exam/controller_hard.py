@@ -7,6 +7,7 @@ from camera_analysis import analyse_for_colours, get_all_detections
 from NN import NN
 from Thymio import Thymio
 import traceback
+from behaivior_avoider import get_behavioral_moves
 
 class controller(input_output,):
     def __init__(self, avoider=True, genes = []):
@@ -100,8 +101,8 @@ class controller(input_output,):
 
         if self.lock_time < time():
             if len(self.action_list) == 0:
-                e =self.get_behavioral_moves()
-                self.action_list = self.get_behavioral_moves()
+                observation = self.build_input(20)
+                self.action_list = get_behavioral_moves()
 
             left_speed, right_speed, exec_sec  = self.action_list[0]
             self.lock_time = time() + exec_sec
@@ -110,105 +111,6 @@ class controller(input_output,):
             factor = 1
             self.set_speed(left_speed*factor * (48/50), right_speed*factor)
         sleep(0.1)
-
-
-    def get_behavioral_moves(self):
-        observation = self.build_input(20)
-
-        lidar = observation[:20]
-        camera_obs = observation[20:45]
-        if self.avoider:
-
-            if self.must_leave:
-                if sum(camera_obs[:5])>= 1:
-                    return [(-300,-300,2)]
-                else:
-                    return [(300, 300, 2)]
-
-            if max(lidar) == 0:
-                return [(0, 0, 2)]
-
-            if sum(camera_obs[16:18])>1:
-                print('i see green')
-                x = 400
-                y = 400
-                return [(400, 400, 1)]
-
-            if sum(camera_obs[:5])>= 1:
-                print('i see red')
-                x = -500
-                y = -300
-                for idx, e in enumerate(camera_obs[:5]):
-                    if e == 1:
-                        if idx < 3:
-                            return [(x,y - (100 * idx), 1)]
-                        else:
-                            return [(x + ((idx-2)*100), x, 1)]
-
-            closest_thing = np.argmax(lidar)
-            if max(lidar) > 0.7:
-                if closest_thing <5:
-                    return [(-300,-500, 1)]
-                if closest_thing <10:
-                    return [(300,500, 1)]
-                if closest_thing <15:
-                    return [(300,400, 1)]
-                if closest_thing <20:
-                    return [(500,300, 1)]
-            # when he sees red
-
-                # if he sees green
-            if sum(camera_obs[16:18])>1:
-                print('i see green')
-                x = 400
-                y = 400
-                return [(400, 400, 1)]
-                #for idx, e in enumerate(camera_obs[:5]):
-                #    if e == 1:
-                #        if idx < 3:
-                #            return [(y + (100 * idx), x, 1)]
-                #        else:
-                #            return [(x, x - ((idx-2) * 100), 1)]
-
-            if max(lidar[:-5]+lidar[16:]) > 0.7:
-                return [(500, 500, 4)]
-
-            if max(lidar[5:16]) > 0.6:
-                if np.random.random() > 0.5:
-                    return [(-350, -500, 3)]
-                else:
-                    return [(-500, -350, 3)]
-
-            if np.random.random() > 0.5:
-                return [(500, 400, 1)]
-            else:
-                return [(400, 500, 1)]
-
-        # HERE comes the Seeker
-        else:
-            # seeing blue
-            if sum(camera_obs[10:15])> 1:
-                print('i see')
-                x = 500
-                y = 300
-                for idx, e in enumerate(camera_obs[10:15]):
-                    if e == 1:
-                        if idx < 3:
-                            return [(y + (100 * idx), x, 1)]
-                        else:
-                            return [(x, x - ((idx-2) * 100), 1)]
-
-            if max(lidar[8:12]) > 0.7:
-                print('here')
-                return [(-500, 500, 1), (500, 500, 2)]
-
-            if max(lidar[:3]+lidar[-3:]) > 0.6:
-                return [(500, 500, 1)]
-
-            if np.random.random() > 0.5:
-                return [(500, 400, 1)]
-            else:
-                return [(400, 500, 1)]
 
     def run(self):
         count = 0
@@ -221,15 +123,9 @@ class controller(input_output,):
     def stop(self):
         self.active = False
 
-    def get_camera_output(self):
-        #picture = self.picture
-        #colour_masks = analyse_for_colours(picture)
-        #return get_all_detections(colour_masks, bins=5, tr=0.01)
-        return self.result
-
     def build_input(self, ds=10):
         lidar_output = self.lidar_output
-        camera_output = self.get_camera_output()
+        camera_output = self.result
         prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
         output = []
         for i in range(0, 360, ds):
