@@ -23,32 +23,35 @@ class learn:
 		self.best_avoider_genes = [self.avoider_genes, -9999]
 
 	def learn(self, how_much_time):
-		offset = 0
 		for simulation in range(1, 999999):
 			print(simulation)
-			if simulation % 200 < 100:
+			if simulation % 500 > 400:
 				self.seeker_genes = np.copy(self.best_seeker_genes[0])
 				if simulation > 1:
 					print("evolve seeker")
-					for i in range(80):
-						self.seeker_genes[(offset + i) % self.s_genes] = random()
+					for i in range(len(self.seeker_genes)):
+						if random() < 0.2:
+							self.seeker_genes[i] += randint(-100, 100)/500
 				self.seeker_nn = NN(self.seeker_genes, self.s_input, 10, 10)
 				self.avoider_nn = NN(self.best_avoider_genes[0], self.s_input,10,10)
 			else:
 				self.avoider_genes = np.copy(self.best_avoider_genes[0])
 				if simulation > 1:
-					print("evolve avoider")
-					for i in range(80):
-						self.avoider_genes[(offset + i) % self.s_genes] = random()
+					for i in range(len(self.avoider_genes)):
+						if random() < 0.2:
+							self.avoider_genes[i] += randint(-100, 100)/500
 				self.seeker_nn = NN(self.best_seeker_genes[0], self.s_input, 10, 10)
 				self.avoider_nn = NN(self.avoider_genes, self.s_input, 10, 10)
-			offset += 80
 			score = [0] * 3
-			for start in range(2):
+			for start in range(4):
 				if start == 0:
-					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[0.6,-0.6,5]], [[-0.6, 0.6, 4]]], ["red", "blue", "blue"])
+					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[0.6,0.6,5]], [[0.6, -0.6, 4]]], ["red", "blue", "blue"])
+				elif start == 1:
+					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[-0.6,0.6,5]], [[-0.6, -0.6, 4]]], ["red", "blue", "blue"])
+				elif start == 2:
+					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[-0.6, 0.6, 5]], [[0.6, 0.6, 4]]], ["red", "blue", "blue"])
 				else:
-					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[-0.6,-0.6,5]], [[0.6, 0.6, 4]]], ["red", "blue", "blue"])
+					self.simulator = kinematic_simulator([], [[[0,0,1.5]], [[-0.6, -0.6, 5]], [[0.6, -0.6, 4]]], ["red", "blue", "blue"])
 				for i in range(how_much_time):
 					a = self.simulator.lidar_sensor(0)
 					b = [self.simulator.camera(0, "red", nbin), self.simulator.camera(0, "yelow", nbin), self.simulator.camera(0, "blue", nbin), self.simulator.camera(0, "green", nbin), self.simulator.camera(0, "purple", nbin)]
@@ -72,10 +75,10 @@ class learn:
 					c = self.simulator.ground_sensor(2)
 					d = build_input(a,b,c, 30)
 					speed3 = self.avoider_nn.forward_propagation(d)
-					self.simulator.simulate([speed1,[0,0], [0,0]], 0.5)
+					self.simulator.simulate([speed1, speed2, speed3], 0.5)
 				for i in range(len(self.simulator.fitness)):
 					score[i] += self.simulator.fitness[i]
-			if  simulation % 200 < 100:
+			if  simulation % 500 > 400:
 				if score[0] >= self.best_seeker_genes[1]:
 					print("save seeker")
 					self.best_seeker_genes = [np.copy(self.seeker_genes), score[0]]
@@ -115,4 +118,4 @@ def build_input(lidar_output, camera_output, ground, ds=10):
 
 if __name__ == "__main__":
 	a = learn()
-	a.learn(80)	
+	a.learn(40)	
