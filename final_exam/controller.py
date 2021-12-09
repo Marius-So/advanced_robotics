@@ -119,9 +119,10 @@ class controller(input_output,):
 		self.active = False
 
 	def get_camera_output(self):
-		picture = self.picture
-		colour_masks = analyse_for_colours(picture)
-		return get_all_detections(colour_masks, bins=5)
+		#picture = self.picture
+		#colour_masks = analyse_for_colours(picture)
+		#return get_all_detections(colour_masks, bins=5, tr=0.01)
+		return self.picture
 
 	def build_input(self, ds=10):
 		lidar_output = self.lidar_output

@@ -6,6 +6,7 @@ from time import sleep, time
 from camera_analysis import analyse_for_colours, get_all_detections
 from NN import NN
 from Thymio import Thymio
+import traceback
 
 class controller(input_output,):
 	def __init__(self, avoider=True, genes = []):
@@ -30,6 +31,7 @@ class controller(input_output,):
 			self.transmission_code = 1
 
 	def mainloop(self):
+		#print(self.get_camera_output())
 		# update sensor values
 		prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
 		# behavior when avoider
@@ -40,16 +42,18 @@ class controller(input_output,):
 				self.active = False
 
 			# TODO: fix these values for the save zone
-			if 200 < ground_reflected[1] < 700:
+			if 400 < ground_reflected[1] < 700:
 				self.set_colour('green')
 				self.cur_colour = 'green'
 				self.send_code(3)
+				sleep(1)
 				self.set_speed(0,0)
-				self.lock_time = time()
+				self.lock_time = time() + 200
 
 			elif self.cur_colour != 'blue':
 				self.set_colour('blue')
 				self.cur_colour = 'blue'
+				self.lock_time = time()
 
 			if self.cur_colour == 'green' and rx == 2:
 				# we need to speed out of the safe zone
@@ -89,20 +93,22 @@ class controller(input_output,):
 			else:
 				self.set_speed(400,-400)
 			sleep(0.7)
-			print('did theses moves')
 			self.lock_time = time()
 
-		self.set_speed(0,0)
+			#self.set_speed(0,0)
 
 		if self.lock_time < time():
 			if len(self.action_list) == 0:
+				e =self.get_behavioral_moves()
 				self.action_list = self.get_behavioral_moves()
 
 			left_speed, right_speed, exec_sec  = self.action_list[0]
 			self.lock_time = time() + exec_sec
 			self.action_list = self.action_list[1:]
 
-			self.set_speed(left_speed * (48/50), right_speed)
+			factor = 1
+			self.set_speed(left_speed*factor * (48/50), right_speed*factor)
+		sleep(0.01)
 
 
 	def get_behavioral_moves(self):
@@ -114,82 +120,93 @@ class controller(input_output,):
 		if self.avoider:
 			if self.must_leave:
 				if sum(camera_obs[:5])>= 1:
-					return (-300,-300,2)
+					return [(-300,-300,2)]
 				else:
-					return (300, 300, 2)
+					return [(300, 300, 2)]
 			# when he sees red
 			if sum(camera_obs[:5])>= 1:
-				x = -300
-				y = -100
+				x = -500
+				y = -300
 				for idx, e in enumerate(camera_obs[:5]):
 					if e == 1:
 						if idx < 3:
-							return (x,y - (100 * idx), 1)
+							return [(x,y - (100 * idx), 1)]
 						else:
-							return (x + ((idx-2)*100), x, 1)
+							return [(x + ((idx-2)*100), x, 1)]
 
 				# if he sees green
 			if sum(camera_obs[17:18])>1:
-				x = 300
-				y = 100
+				x = 500
+				y = 200
 				for idx, e in enumerate(camera_obs[:5]):
 					if e == 1:
 						if idx < 3:
-							return (y + (100 * idx), x, 1)
+							return [(y + (100 * idx), x, 1)]
 						else:
-							return (x, x - ((idx-2) * 100), 1)
+							return [(x, x - ((idx-2) * 100), 1)]
 
-			if max(lidar[16:-5]) > 0.7:
-				return (400, 400, 1)
+			if max(lidar[:-5]+lidar[16:]) > 0.7:
+				return [(500, 500, 4)]
 
 			if max(lidar[5:16]) > 0.7:
 				if np.random.random() > 0.5:
-					return (-150, -200, 1)
+					return [(-350, -500, 3)]
 				else:
-					return (-200, -150, 1)
+					return [(-500, -350, 3)]
 
+			if np.random.random() > 0.5:
+				return [(500, 400, 1)]
 			else:
-				if np.random.random() > 0.5:
-					(200, 100, 1)
-				else:
-					(100, 200, 1)
+				return [(400, 500, 1)]
 
 		# HERE comes the Seeker
 		else:
+			#if np.random.random() > 0.5:
+			#	return [(500,400,4)]
+			#else:
+			#	return [(400,500,4)]
+			# seeing blue
+			print(camera_obs[10:15])
 			if sum(camera_obs[10:15])> 1:
-				x = 400
-				y = 200
+				self.play_tune
+				x = 500
+				y = 300
 				for idx, e in enumerate(camera_obs[10:15]):
 					if e == 1:
 						if idx < 3:
-							return (y + (100 * idx), x, 1)
+							return [(y + (100 * idx), x, 1)]
 						else:
-							return (x, x - ((idx-2) * 100), 1)
+							return [(x, x - ((idx-2) * 100), 1)]
 
 			if max(lidar[8:12]) > 0.7:
-				return (-300, -300, 1)
+				print('here')
+				return [(-500, 500, 1), (500, 500, 2)]
 
+			if max(lidar[:3]+lidar[-3:]) > 0.7:
+				return [(500, 500, 1)]
+
+
+			if np.random.random() > 0.5:
+				return [(500, 400, 1)]
 			else:
-				if np.random.random() > 0.5:
-					(400, 0, 1)
-				else:
-					(0, 400, 1)
-			# er are seeker
+				return [(400, 500, 1)]
 
 	def run(self):
 		count = 0
-		while self.active and count < 100:
+		while self.active:
 			count+=1
-			print(count)
+			if count//100 == 0:
+				pass
 			self.mainloop()
 
 	def stop(self):
 		self.active = False
 
 	def get_camera_output(self):
-		picture = self.picture
-		colour_masks = analyse_for_colours(picture)
-		return get_all_detections(colour_masks, bins=5)
+		#picture = self.picture
+		#colour_masks = analyse_for_colours(picture)
+		#return get_all_detections(colour_masks, bins=5, tr=0.01)
+		return self.picture
 
 	def build_input(self, ds=10):
 		lidar_output = self.lidar_output
@@ -231,3 +248,7 @@ if __name__ == "__main__":
 	except KeyboardInterrupt:
 		robot.set_speed(0,0)
 		robot.set_colour('red')
+	except Exception as e:
+		robot.set_speed(0,0)
+		robot.set_colour('red')
+		print(traceback(e))
