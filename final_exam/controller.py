@@ -12,19 +12,12 @@ class controller(input_output,):
         # TODO: type of contoller
 
         self.active = True
-        self.avoider = avoider
         self.locked_sender = time()
 
 
-        if self.avoider:
-            self.set_colour('blue')
-            self.cur_colour = 'blue'
-            self.transmission_code = 2
-
-        else:
-            self.set_colour('red')
-            self.cur_colour = 'red'
-            self.transmission_code = 1
+        self.set_colour('red')
+        self.cur_colour = 'red'
+        self.transmission_code = 1
         # then we create the feed forward network based on the genes
         # TODO: create nn based on the genes
         self.NN = NN(genes, input_neurons=39, hidden_neurons=10, output_neurons=10)
@@ -32,46 +25,13 @@ class controller(input_output,):
     def mainloop(self):
         # update sensor values
         prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
-        # behavior when avoider
-        if self.avoider:
-            if rx == 1 and self.cur_colour == 'blue':#
-                self.cur_colour == 'purple'
-                self.set_colour('purple')
-                self.set_speed(0,0)
-                self.active = False
+        if 200 < ground_reflected[1] < 700:
+            self.set_colour('orange')
+            self.cur_colour = 'orange'
 
-            # TODO: fix these values for the save zone
-            if 200 < ground_reflected[1] < 700:
-                self.set_colour('green')
-                self.cur_colour = 'green'
-                self.send_code(3)
-
-            elif self.cur_colour != 'blue':
-                self.set_colour('blue')
-                self.cur_colour = 'blue'
-
-            if self.cur_colour == 'green' and rx == 2:
-                # we need to speed out of the safe zone
-                self.set_speed(300, 300)
-                self.locked_sender = time() + 5
-                # TODO stop transmitting
-                self.transmission_code = 3
-                self.send_code(self.transmission_code)
-                sleep(2)
-
-            if self.transmission_code == 3 and time() > self.locked_sender:
-                self.transmission_code == 2
-                self.send_code(self.transmission_code)
-
-        # behavior when seeker
-        else:
-            if 200 < ground_reflected[1] < 700:
-                self.set_colour('orange')
-                self.cur_colour = 'orange'
-
-            elif self.cur_colour != 'red':
-                self.set_colour('red')
-                self.cur_colour = 'red'
+        elif self.cur_colour != 'red':
+            self.set_colour('red')
+            self.cur_colour = 'red'
 
         self.send_code(self.transmission_code)
 
