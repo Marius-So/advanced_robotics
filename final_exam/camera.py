@@ -2,6 +2,7 @@ from picamera import PiCamera
 from threading import Thread
 from time import sleep
 import numpy as np
+from camera_analysis import analyse_for_colours, get_all_detections
 
 class camera():
     def __init__(self):
@@ -10,7 +11,8 @@ class camera():
         sleep(0.1)
         self.camera.resolution = (224, 176)
         self.camera.framerate = 24
-        self.picture = np.empty((176, 224, 3), dtype=np.uint8)
+        # self.picture = np.empty((176, 224, 3), dtype=np.uint8)
+        self.result = [[0 for j in range(5)] for i in range(5)]
         camera_thread = Thread(target=self.camera_sensing)
         camera_thread_daemon = True
         camera_thread.start()
@@ -20,8 +22,10 @@ class camera():
             try:
                 temp_img = np.empty((176, 224, 3), dtype=np.uint8)
                 self.camera.capture(temp_img, 'rgb')
-                self.picture = np.flip(np.flip(self.picture, 0),1)
-                self.picture = temp_img
+                temp_img = np.flip(np.flip(temp_img, 0),1)
+                colour_masks = analyse_for_colours(temp_img, 3)
+                temp_img = get_all_detections(colour_masks, bins=5, tr=0.01)
+                self.result = temp_img
             except Exception as e:
                 print(e)
                 sleep(2)

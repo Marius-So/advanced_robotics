@@ -233,6 +233,10 @@ class kinematic_simulator:
 				self.step(self.robots[i], instructions[i])
 				if self.robots[i][-1][0] < -0.75 or self.robots[i][-1][0] > 0.75 or self.robots[i][-1][1] < -1 or self.robots[i][-1][1] > 1:
 					self.fitness[i] -= 1
+					if self.colors[i] != "red":
+						self.fitness[i] -= 9
+						self.robots[i][-1] = self.robots[i][-2]
+						self.robots[i][-1][2] += 180
 				if self.robots[i][-1][0] < 0.1 and self.robots[i][-1][0] > -0.1 and self.robots[i][-1][1] < 0.1 and self.robots[i][-1][1] > -0.1:
 					if self.colors[i] == "blue":
 						self.colors[i] = "green"
