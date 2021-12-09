@@ -7,7 +7,7 @@ from camera_analysis import analyse_for_colours, get_all_detections
 from NN import NN
 from Thymio import Thymio
 import traceback
-from behaivior_avoider import get_behavioral_moves
+from behaviour import get_behavioural_moves
 
 class controller(input_output,):
     def __init__(self, avoider=True, genes = []):
@@ -102,7 +102,7 @@ class controller(input_output,):
         if self.lock_time < time():
             if len(self.action_list) == 0:
                 observation = self.build_input(20)
-                self.action_list = get_behavioral_moves(observation)
+                self.action_list = get_behavioural_moves(observation)
 
             left_speed, right_speed, exec_sec  = self.action_list[0]
             self.lock_time = time() + exec_sec
