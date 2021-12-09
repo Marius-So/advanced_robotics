@@ -4,7 +4,7 @@ from kinematic_simulator import kinematic_simulator
 from random import randint, random
 import os
 from datetime import datetime
-from behaivior_avoider import get_simu_behavior
+from behaviour_avoider import get_simu_behaviour
 
 nbin = 5
 h = 2.5
@@ -67,12 +67,12 @@ class learn:
 					b = [self.simulator.camera(1, "red", nbin), self.simulator.camera(1, "yelow", nbin), self.simulator.camera(1, "blue", nbin), self.simulator.camera(1, "green", nbin), self.simulator.camera(1, "purple", nbin)]
 					c = self.simulator.ground_sensor(1)
 					d = build_input(a,b,c, 20)
-					speed2 = get_simu_behavior(d)
+					speed2 = get_behavioural_moves(d)
 					a = self.simulator.lidar_sensor(2)
 					b = [self.simulator.camera(2, "red", nbin), self.simulator.camera(2, "yelow", nbin), self.simulator.camera(2, "blue", nbin), self.simulator.camera(2, "green", nbin), self.simulator.camera(2, "purple", nbin)]
 					c = self.simulator.ground_sensor(2)
 					d = build_input(a,b,c, 20)
-					speed3 = get_simu_behavior(d)
+					speed3 = get_behavioural_moves(d)
 					self.simulator.simulate([speed1, speed2, speed3], 0.5)
 				for i in range(len(self.simulator.fitness)):
 					score[i] += self.simulator.fitness[i]
