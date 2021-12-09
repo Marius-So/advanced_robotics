@@ -77,6 +77,11 @@ def get_center(mask):
 import cv2
 import numpy as np
 
+trs = {0: 0.5,
+        1:1,
+        2:0.1,
+        3:2,
+        4:1}
 def analyse_for_colours(image, k_size = 10):
     input_hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     kernel = np.ones((k_size, k_size), np.uint8)
@@ -127,6 +132,7 @@ def get_bin_detection(mask, bins = 8, tr= 0.01):
     else:
         ret, mask = cv2.threshold(mask,0.5, 1,cv2.THRESH_BINARY)
 
+
     detection_bins = np.zeros(bins)
     y,x = mask.shape
 
@@ -134,7 +140,7 @@ def get_bin_detection(mask, bins = 8, tr= 0.01):
     if x % bins != 0: bin_width += 1
     for idx in range(bins):
         percent = np.sum(mask.T[idx*bin_width:(idx+1)*bin_width]) / (y*bin_width)
-        if percent > tr:
+        if percent > tr*trs[idx]:
             detection_bins[idx] = 1 #np.sum(mask.T[idx*bin_width:(idx+1)*bin_width]) / (y*bin_width)
 
     return detection_bins

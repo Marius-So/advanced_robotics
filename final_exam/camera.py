@@ -24,7 +24,7 @@ class camera():
                 self.camera.capture(temp_img, 'rgb')
                 temp_img = np.flip(np.flip(temp_img, 0),1)
                 colour_masks = analyse_for_colours(temp_img, 3)
-                temp_img = get_all_detections(colour_masks, bins=5, tr=0.001)
+                temp_img = get_all_detections(colour_masks, bins=5, tr=0.01)
                 self.result = temp_img
             except Exception as e:
                 print(e)
