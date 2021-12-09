@@ -1,20 +1,17 @@
 import numpy as np
 
 def get_behavioural_moves(observation, must_leave=False):
-    lidar = observation[:20]
-    camera_obs = observation[20:45]
-    if must_leave:
-        if sum(camera_obs[:5])>= 1:
-            return [(-300,-300,2)]
-        else:
-            return [(300, 300, 2)]
+    lidar = observation[:18]
+    camera_obs = observation[18:43]
 
-    if max(lidar) == 0:
-        return [(0, 0, 2)]
-    if sum(camera_obs[16:18])>1:
-        x = 400
-        y = 400
-        return [(400, 400, 1)]
+    if max(lidar) < 0.7:
+        return [(0, 0, 1)]
+
+    # if we see green
+    if sum(camera_obs[16:18]) > 0:
+        return [(400, 400, 3)]
+
+    # if we see red
     if sum(camera_obs[:5])>= 1:
         x = -500
         y = -300
@@ -24,33 +21,22 @@ def get_behavioural_moves(observation, must_leave=False):
                     return [(x,y - (100 * idx), 1)]
                 else:
                     return [(x + ((idx-2)*100), x, 1)]
+
     closest_thing = np.argmax(lidar)
     if max(lidar) > 0.7:
         if closest_thing <5:
             return [(-300,-500, 1)]
-        if closest_thing <10:
+        if closest_thing <9:
             return [(300,500, 1)]
-        if closest_thing <15:
-            return [(300,400, 1)]
-        if closest_thing <20:
+        if closest_thing <14:
             return [(500,300, 1)]
-    # when he sees red
-        # if he sees green
-    if sum(camera_obs[16:18])>1:
-        x = 400
-        y = 400
-        return [(400, 400, 1)]
-    if max(lidar[:-5]+lidar[16:]) > 0.7:
-        return [(500, 500, 4)]
-    if max(lidar[5:16]) > 0.6:
-        if np.random.random() > 0.5:
-            return [(-350, -500, 3)]
-        else:
-            return [(-500, -350, 3)]
+        if closest_thing <19:
+            return [(-500,-300, 1)]
+
     if np.random.random() > 0.5:
-        return [(500, 400, 1)]
+        return [(150, 200, 1)]
     else:
-        return [(400, 500, 1)]
+        return [(200, 150, 1)]
 
 def get_simu_behaviour(obs):
     ret = get_behavioural_moves(obs)

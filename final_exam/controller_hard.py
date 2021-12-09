@@ -7,7 +7,7 @@ from camera_analysis import analyse_for_colours, get_all_detections
 from NN import NN
 from Thymio import Thymio
 import traceback
-from behaviour import get_behavioural_moves
+from behaviour_avoider import get_behavioural_moves
 
 class controller(input_output,):
     def __init__(self, avoider=True, genes = []):
@@ -38,7 +38,7 @@ class controller(input_output,):
         prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
         # behavior when avoider
         if self.avoider:
-            if rx == 1:
+            if rx == 1 and self.cur_colour == 'blue':
                 self.set_colour('purple')
                 self.set_speed(0,0)
                 self.active = False
@@ -61,28 +61,14 @@ class controller(input_output,):
                 # we need to speed out of the safe zone
                 #TODO: do leave save zone behavior
                 self.must_leave = True
+                self.set_speed(200,200)
                 self.lock_time = time()
                 self.transmission_code = 3
                 self.locked_sender = time() + 5
-                self.send_code(self.transmission_code)
+                sleep(2)
 
             if self.transmission_code == 3 and time() > self.locked_sender:
                 self.transmission_code == 2
-                self.send_code(self.transmission_code)
-
-        # behavior when seeker
-        else:
-            if 200 < ground_reflected[1] < 700:
-                self.set_colour('orange')
-                self.cur_colour = 'orange'
-                self.transmission_code == 3
-                self.lock_time = time()
-
-            elif self.cur_colour != 'red':
-                self.set_colour('red')
-                self.cur_colour = 'red'
-                self.transmission_code == 1
-                self.lock_time = time()
 
             self.send_code(self.transmission_code)
 
@@ -97,8 +83,6 @@ class controller(input_output,):
             sleep(0.7)
             self.lock_time = time()
 
-            #self.set_speed(0,0)
-
         if self.lock_time < time():
             if len(self.action_list) == 0:
                 observation = self.build_input(20)
@@ -107,10 +91,7 @@ class controller(input_output,):
             left_speed, right_speed, exec_sec  = self.action_list[0]
             self.lock_time = time() + exec_sec
             self.action_list = self.action_list[1:]
-
-            factor = 1
-            self.set_speed(left_speed*factor * (48/50), right_speed*factor)
-        sleep(0.1)
+            self.set_speed(left_speed * (48/50), right_speed)
 
     def run(self):
         count = 0
