@@ -79,7 +79,7 @@ class controller(input_output,):
             for j in range(i, i + ds):
                 m = float('inf')
                 if lidar_output2[j] < m:
-                    m = lidar_output[j]
+                    m = lidar_output2[j]
             if m == float('inf') or m > 1000:
                 output.append(0)
             else:
