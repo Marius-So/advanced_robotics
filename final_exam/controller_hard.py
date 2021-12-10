@@ -61,13 +61,12 @@ class controller(input_output,):
             if self.cur_colour == 'green' and rx == 2:
                 # we need to speed out of the safe zone
                 #TODO: do leave save zone behavior
-                if ground_reflected[1] > 400:
-                    self.must_leave = True
-                    self.set_speed(200,200)
-                    self.lock_time = time()
-                    self.transmission_code = 3
-                    self.locked_sender = time() + 5
-                    sleep(2)
+                self.must_leave = True
+                self.set_speed(200,200)
+                self.lock_time = time()
+                self.transmission_code = 3
+                self.locked_sender = time() + 5
+                sleep(2)
 
             if self.transmission_code == 3 and time() > self.locked_sender:
                 self.transmission_code == 2
