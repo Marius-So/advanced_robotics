@@ -32,7 +32,6 @@ class controller(input_output,):
             self.transmission_code = 1
 
     def mainloop(self):
-        self.send_code(1)
         #print(self.get_camera_output())
         # update sensor values
         prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
@@ -41,6 +40,8 @@ class controller(input_output,):
             if rx == 1 and self.cur_colour == 'blue':
                 self.set_colour('purple')
                 self.set_speed(0,0)
+                sleep(2)
+                self.set_speed(0,0)
                 self.active = False
 
             # TODO: fix these values for the save zone
@@ -48,6 +49,7 @@ class controller(input_output,):
                 self.set_colour('green')
                 self.cur_colour = 'green'
                 self.send_code(3)
+                self.transmission_code = 3
                 self.set_speed(0,0)
                 self.lock_time = time() + 200
 
@@ -75,7 +77,7 @@ class controller(input_output,):
         # avoid the black tape we avoid the tape either way
         if ground_reflected[1] < 400:
             factior = 1
-            if left_speed < 0: factior = -1
+            #if left_speed < 0: factior = -1
             self.set_speed(factior*-400,factior*-400)
             sleep(0.5)
             if np.random.random() < 0.5:
@@ -102,6 +104,7 @@ class controller(input_output,):
             if count//100 == 0:
                 pass
             self.mainloop()
+        self.set_speed(0,0)
 
     def stop(self):
         self.active = False
@@ -109,7 +112,6 @@ class controller(input_output,):
     def build_input(self, ds=10):
         lidar_output = self.lidar_output
         camera_output = self.result
-        print(camera_output)
         prox_horizontal, ground_reflected, left_speed, right_speed, rx = self.get_sensor_values()
         output = []
         for i in range(0, 360, ds):
@@ -146,8 +148,8 @@ if __name__ == "__main__":
         robot.run()
     except KeyboardInterrupt:
         robot.set_speed(0,0)
-        robot.set_colour('red')
+        robot.set_colour('purple')
     except Exception as e:
         robot.set_speed(0,0)
-        robot.set_colour('red')
+        robot.set_colour('purple')
         print(traceback(e))

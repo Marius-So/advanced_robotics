@@ -80,8 +80,10 @@ import numpy as np
 trs = {0: 0.5,
         1:1,
         2:0.1,
-        3:2,
+        3:0.01,
         4:1}
+#trs = {0: 1,1:1,2:1,3:1,4:1}
+
 def analyse_for_colours(image, k_size = 10):
     input_hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     kernel = np.ones((k_size, k_size), np.uint8)
